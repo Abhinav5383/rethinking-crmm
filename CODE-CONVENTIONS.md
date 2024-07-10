@@ -10,7 +10,7 @@
 - All config variables and magic numbers must be in UPPERCASE and separated by underscores (`_`)
     ```typescript
     const USERNAME_MAX_LENGTH = 32;
-    const SEARCH_DB_SYNC_INTERVAL_MS = 300_000;
+    const SEARCHDB_SYNC_INTERVAL_MS = 300_000;
     ```
 - Try to always `export` things at the bottom of file rather than exporting them individually and if possible add comments for each exported thing explaining what that is used for and in which kind of files
     ```typescript

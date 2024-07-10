@@ -4,7 +4,7 @@
 - Functions and regular variables should be named in camelCase
     ```typescript
     const checkIfSearchResultCacheIsValid = ( ... ) => { ... };
-    const isSearchResultCacheInvalid = checkIfSearchResultCacheIsValid( ... );
+    const isSearchResultCacheValid = checkIfSearchResultCacheIsValid( ... );
     ```
 
 - All config variables and magic numbers must be in UPPERCASE and separated by underscores (`_`)

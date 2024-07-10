@@ -3,7 +3,6 @@
 ## Naming conventions
 - Functions and regular variables should be named in camelCase
     ```typescript
-    // const check_if_search_result_cache_is_valid = () => {
     const checkIfSearchResultCacheIsValid = ( ... ) => { ... };
     const isSearchResultCacheInvalid = checkIfSearchResultCacheIsValid( ... );
     ```

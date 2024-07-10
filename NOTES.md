@@ -17,7 +17,7 @@
 - `config/`  =>  For all the project wide config values
 - `lib/`
     - `types/`  =>  Shared types and enums
-    - `utils/`  =>  Project wide shared utility function
+    - `utils/`  =>  Project wide shared utility functions
     - `form-validation/`  =>  Form validation logic. Syntax check, length validation etc.
 <br>
 

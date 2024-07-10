@@ -7,3 +7,4 @@ Each significant directory contains a `NOTES.md` file that roughly describes wha
 Some general [CODE-CONVENTIONS](CODE-CONVENTIONS.md) to follow across the project.
 
 - [/NOTES.md](NOTES.md)
+    - [/apps/backend/NOTES.md](apps/backend/NOTES.md)

@@ -7,18 +7,18 @@
 │   └── backend/
 ├── config/
 │   └── index.ts
-└── lib/
-    ├── types/
-    │   └── index.ts
-    ├── utils/
-    └── form-validation/
+├── lib/
+│   ├── utils/
+│   └── form-validation/
+└── types/
+    └── index.ts
 ```
 
 - `config/`  =>  For all the project wide config values
 - `lib/`
-    - `types/`  =>  Shared types and enums
     - `utils/`  =>  Project wide shared utility functions
     - `form-validation/`  =>  Form validation logic. Syntax check, length validation etc.
+- `types/`  =>  Shared types and enums
 <br>
 
 ## Frontend architecture
@@ -35,6 +35,8 @@ frontend/
 │   └── use-theme.tsx
 ├── contexts/
 │   └── auth-context.tsx
+├──types/
+│   └── index.ts
 ├── src/
 │   ├── pages/
 │   │   ├── auth/
@@ -52,6 +54,7 @@ frontend/
     - `styles.module.css`  =>  Shared css file for all the components
 - `hooks/`  =>  For custom made hooks
 - `contexts/`  =>  All the contexts like auth, project-context etc.
+- `types/`  =>  Types exclusive to the frontend
 - `src/`
     - `pages/`  =>  Different application pages with file structure corresponding to their URL mapping (Following [Next.js Routing Conventions](https://nextjs.org/docs/app/building-your-application/routing))
 
@@ -63,6 +66,8 @@ frontend/
 backend/
 ├── prisma/
 │   └── schema.prisma
+├── types/
+│   └── index.ts
 ├── src/
 │   ├── controllers/
 │   ├── services/
@@ -74,7 +79,8 @@ backend/
 └── .env
 ```
 
-- `prima/schema.prisma`  =>  Contains all the database schema
+- `prima/`  =>  Contains all the database schema
+- `types/`  =>  Types exclusive to the backend
 - `src/`
     - `controllers/`  =>  Handles incoming HTTP requests and delegates work to other background services if needed.
     - `middleware/`  =>  Middlewares for things like authentication, rate limiting, possibly caching search results and collecting data like page views, downloads count etc

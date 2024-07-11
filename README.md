@@ -4,7 +4,6 @@ This is a plan to rebuild [CRMM](https://github.com/CRModders/cosmic-mod-manager
 
 Each significant directory contains a `NOTES.md` file that roughly describes what that direcory and each of its files/folders are meant for.
 
-Some general [CODE-CONVENTIONS](CODE-CONVENTIONS.md) to follow across the project.
+Some general [CODE-CONVENTIONS](docs/CODE-CONVENTIONS.md) to follow across the project.
 
-- [/NOTES.md](NOTES.md)
-    - [/apps/backend/NOTES.md](apps/backend/NOTES.md)
+See [DOCS](docs/NOTES.md)

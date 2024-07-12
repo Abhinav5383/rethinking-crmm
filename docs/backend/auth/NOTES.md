@@ -20,18 +20,18 @@ auth/
 ## Sign-in flow
 - ### oAuth
     - User clicks the oAuth provider signIn widget
-    - The client makes a request to `/api/auth/v1/get-oauth-url/:authProvider`
+    - The client makes a request to `/api/auth/get-oauth-url/:authProvider`
     - The server will [GENERATE OAUTH URL](#generate-oauth-url) and return that in response
         ```typescript
         return ctx.json({ oAuthUrl: generatedOAuthUrl }, HTTP_CODES.success);
         ```
     - The client will redirect the user to `oAuthUrl`
     - The user gets redirected back to `/auth/callback/:authProvider` after a successful authorization from the oAuthProvider with the `tokenExchangeCode` and the `csrfState` parameter
-    - If the `csrfState` matches the code is sent to `/api/auth/v1/signin/:authProvider` for the user to be signedIn finally
+    - If the `csrfState` matches the code is sent to `/api/auth/signin/:authProvider` for the user to be signedIn finally
 
 - ### Credential
     - The user enters their signin credentials and presses the signin button
-    - The data is sent to `/api/auth/v1/signin/:authProvider` ("credential" is authProvider here)
+    - The data is sent to `/api/auth/signin/:authProvider` ("credential" is authProvider here)
 
 - The signin request is handled by a `signInRequestHandler`
 - It passes down the data to the respective auth provider to [GET OAUTH USER PROFILE DATA](#get-oauth-user-profile-data) from the received data

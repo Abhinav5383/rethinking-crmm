@@ -79,7 +79,7 @@ backend/
 └── .env
 ```
 
-- `prima/`  =>  Contains all the database schema
+- `prisma/`  =>  Contains all the database schema
 - `types/`  =>  Types exclusive to the backend
 - `src/`
     - `controllers/`  =>  Handles incoming HTTP requests and delegates work to other background services if needed.

@@ -12,7 +12,7 @@ model User {
     fullName              String    @db.VarChar(32)
     userName              String    @db.VarChar(32)
     email                 String    @unique @db.VarChar(256)
-    role                  String    @default("USER")
+    role                  String    @default("user")
     dateEmailVerified     DateTime?
     password              String?   @db.VarChar(256)
     unverifiedNewPassword String?   @db.VarChar(256)

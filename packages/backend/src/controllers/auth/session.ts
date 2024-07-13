@@ -1,7 +1,9 @@
+import { type ContextUserSession, ctxReqAuthSessionKey } from "@/../types";
 import prisma from "@/services/prisma";
 import { generateRandomString } from "@/utils";
 import { sendNewSigninAlertEmail } from "@/utils/email";
-import type { User } from "@prisma/client";
+import { defaultServerErrorResponse } from "@/utils/http";
+import type { User, UserSession } from "@prisma/client";
 import { authTokenCookieName, userSessionValidity } from "@root/config";
 import { UserSessionStates } from "@root/types";
 import type { Context } from "hono";
@@ -100,7 +102,7 @@ export const getUserSessionCookie = (c: Context): UserSessionCookieData | null =
     return null;
 };
 
-export async function getLoggedInUser(sessionId: number, sessionToken: string): Promise<User | null> {
+export async function getLoggedInUser(sessionId: number, sessionToken: string): Promise<ContextUserSession | null> {
     try {
         if (!sessionId || !sessionToken) {
             throw new Error("Missing required fields!");
@@ -119,7 +121,11 @@ export async function getLoggedInUser(sessionId: number, sessionToken: string): 
             },
         });
 
-        return session?.user || null;
+        return {
+            ...session?.user,
+            sessionId,
+            sessionToken
+        } || null;
     } catch (error) {
         return null;
     }
@@ -147,3 +153,34 @@ export const getUserSession = async (
         return null;
     }
 };
+
+
+export const logOutUserSession = async (ctx: Context, sessionId: number) => {
+    try {
+        const userSession = ctx.get(ctxReqAuthSessionKey) as ContextUserSession;
+        let deletedSession: UserSession | undefined | null;
+
+        if (userSession.id === sessionId) {
+            deletedSession = await prisma.userSession.delete({
+                where: {
+                    id: sessionId,
+                    userId: userSession.id
+                }
+            })
+        } else {
+            deletedSession = await prisma.userSession.delete({
+                where: {
+                    id: sessionId,
+                    userId: userSession.id,
+                }
+            });
+
+        }
+        if (!deletedSession?.id) {
+            return ctx.json({ success: false, message: `Cannot delete session id: ${sessionId}, idk why!` })
+        }
+        return ctx.json({ success: true, message: `Session with id: ${sessionId} logged out successfully` })
+    } catch (error) {
+        return defaultServerErrorResponse(ctx)
+    }
+}

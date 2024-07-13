@@ -10,15 +10,15 @@ export const RateLimiterMiddleware = async (ctx: Context, next: Next) => {
 
         let count = Number.parseInt(await redis.get(key) || "-1");
         if (count === -1) {
-            redis.set(key, 1, "EX", rateLimits.global.timeWindow_s);
+            await redis.set(key, 1, "EX", rateLimits.global.timeWindow_s);
             count = 1;
-        } else {
-            redis.incr(key);
+        } else if (count < rateLimits.global.limit) {
+            await redis.incr(key);
         }
 
-        ctx.res.headers.set("X-Ratelimit-Remaining", (rateLimits.global.limit - count).toString())
-        ctx.res.headers.set("X-Ratelimit-Limit", rateLimits.global.limit.toString())
-        ctx.res.headers.set("X-Ratelimit-Reset", rateLimits.global.timeWindow_s.toString())
+        ctx.res.headers.set("X-Ratelimit-Remaining", `${Math.max(rateLimits.global.limit - count, 0)}`)
+        ctx.res.headers.set("X-Ratelimit-Limit", `${rateLimits.global.limit}`)
+        ctx.res.headers.set("X-Ratelimit-Reset", `${rateLimits.global.timeWindow_s}`)
 
         if (count > rateLimits.global.limit) {
             return ctx.json({ success: false, message: "Rate limit exceeded, please try again after 5 minutes" }, getHttpCode("too_many_requests"));

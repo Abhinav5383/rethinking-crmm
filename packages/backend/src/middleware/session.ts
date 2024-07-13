@@ -3,6 +3,7 @@ import { getUserSession } from "@/controllers/auth/session";
 import { deleteUserCookie, generateRandomString, setUserCookie } from "@/utils";
 import type { Context, Next } from "hono";
 import { getCookie } from "hono/cookie";
+import { ctxReqAuthSessionKey } from "../../types";
 
 export const AuthenticationMiddleware = async (ctx: Context, next: Next) => {
     const user = await getUserSession(ctx);
@@ -20,7 +21,7 @@ export const AuthenticationMiddleware = async (ctx: Context, next: Next) => {
         deleteUserCookie(ctx, "guest-session")
     }
 
-    ctx.set("user-session", user);
+    ctx.set(ctxReqAuthSessionKey, user);
     ctx.set("ip", ipAddr);
     await next();
 }

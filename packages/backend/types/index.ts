@@ -1,4 +1,7 @@
+import type { User } from "@prisma/client";
+
 export const ctxReqBodyKey = "reqBody";
+export const ctxReqAuthSessionKey = "user-session";
 
 export interface AuthUserProfile {
     name?: string | null;
@@ -28,4 +31,9 @@ export interface UserDeviceDetails {
     },
     city: string;
     country: string;
+}
+
+export interface ContextUserSession extends User {
+    sessionId: number;
+    sessionToken: string;
 }

@@ -1,5 +1,5 @@
 import type { AuthUserProfile } from "@/../types";
-import { AuthProviders } from "@root/types";
+import { AuthProviders } from "@shared/types";
 
 async function fetchUserData(access_token: string) {
     const userDataRes = await fetch("https://api.github.com/user", {
@@ -43,7 +43,6 @@ async function fetchUserEmail(access_token: string): Promise<EmailData | null> {
     return userEmailObj;
 }
 export const getGithubUserProfileData = async (tokenExchangeCode: string) => {
-
     const authTokenRes = await fetch(
         `https://github.com/login/oauth/access_token?client_id=${process.env.GITHUB_ID}&client_secret=${process.env.GITHUB_SECRET}&code=${tokenExchangeCode}`,
         {
@@ -74,4 +73,4 @@ export const getGithubUserProfileData = async (tokenExchangeCode: string) => {
     };
 
     return profile;
-}
+};

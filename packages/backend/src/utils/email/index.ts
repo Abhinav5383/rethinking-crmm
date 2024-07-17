@@ -1,5 +1,5 @@
 import { sendEmail } from "@/services/email";
-import { monthNames } from "@root/lib/utils/date-time";
+import { monthNames } from "@shared/lib/utils/date-time";
 import { newSignInAlertEmailTemplate } from "./templates";
 
 const frontendUrl = process.env.FRONTEND_URL;
@@ -12,7 +12,7 @@ export const sendNewSigninAlertEmail = async ({
     ip,
     browserName,
     osName,
-    authProviderName
+    authProviderName,
 }: {
     fullName: string;
     receiverEmail: string;

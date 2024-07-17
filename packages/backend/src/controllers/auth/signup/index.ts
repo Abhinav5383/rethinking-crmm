@@ -2,8 +2,8 @@ import type { AuthUserProfile } from "@/../types";
 import prisma from "@/services/prisma";
 import { generateRandomString, setUserCookie } from "@/utils";
 import getHttpCode from "@/utils/http";
-import { authTokenCookieName } from "@root/config";
-import { AuthProviders } from "@root/types";
+import { authTokenCookieName } from "@shared/config";
+import { AuthProviders } from "@shared/types";
 import type { Context } from "hono";
 import { createNewAuthAccount } from "../commons";
 import { getDiscordUserProfileData } from "../discord";
@@ -33,31 +33,41 @@ export const oAuthSignUpHandler = async (ctx: Context, authProvider: string, tok
     }
 
     if (!profileData || !profileData?.email || !profileData?.providerName || !profileData?.providerAccountId) {
-        return ctx.json({ message: "Invalid profile data received from the auth provider, most likely the code provided was invalid", success: false, data: profileData }, getHttpCode("bad_request"));
+        return ctx.json(
+            {
+                message: "Invalid profile data received from the auth provider, most likely the code provided was invalid",
+                success: false,
+                data: profileData,
+            },
+            getHttpCode("bad_request"),
+        );
     }
 
     // Return if an auth account already exists with the same provider
     const possiblyAlreadyExistingAuthAccount = await prisma.authAccount.findFirst({
         where: {
             providerName: profileData.providerName,
-            OR: [
-                { providerAccountId: `${profileData.providerAccountId}` },
-                { providerAccountEmail: profileData.email }
-            ]
-        }
+            OR: [{ providerAccountId: `${profileData.providerAccountId}` }, { providerAccountEmail: profileData.email }],
+        },
     });
     if (possiblyAlreadyExistingAuthAccount?.id) {
-        return ctx.json({ success: false, message: "A user already exists with the account you are trying to sign up with." }, getHttpCode("bad_request"))
+        return ctx.json(
+            { success: false, message: "A user already exists with the account you are trying to sign up with." },
+            getHttpCode("bad_request"),
+        );
     }
 
     // Return if a user already exists with the same email
     const possiblyAlreadyExistingUser = await prisma.user.findUnique({
         where: {
-            email: profileData.email
-        }
-    })
+            email: profileData.email,
+        },
+    });
     if (possiblyAlreadyExistingUser?.id) {
-        return ctx.json({ success: false, message: "A user already exists with the account you are trying to sign up with." }, getHttpCode("bad_request"))
+        return ctx.json(
+            { success: false, message: "A user already exists with the account you are trying to sign up with." },
+            getHttpCode("bad_request"),
+        );
     }
 
     // Finally create a user
@@ -71,19 +81,28 @@ export const oAuthSignUpHandler = async (ctx: Context, authProvider: string, tok
             avatarImageProvier: profileData.providerName,
             settings: {
                 create: {
-                    signInAlerts: true
-                }
-            }
-        }
+                    signInAlerts: true,
+                },
+            },
+        },
     });
 
     await createNewAuthAccount(newUser.id, profileData);
 
-    const newSession = await createNewUserSession({ userId: newUser.id, providerName: authProvider, ctx, isFirstSignIn: true, user: newUser });
+    const newSession = await createNewUserSession({
+        userId: newUser.id,
+        providerName: authProvider,
+        ctx,
+        isFirstSignIn: true,
+        user: newUser,
+    });
     setUserCookie(ctx, authTokenCookieName, JSON.stringify(newSession));
 
-    return ctx.json({
-        success: true,
-        message: `Successfully signed up using ${authProvider} as ${newUser.fullName}`
-    }, getHttpCode("ok"));
-}
+    return ctx.json(
+        {
+            success: true,
+            message: `Successfully signed up using ${authProvider} as ${newUser.fullName}`,
+        },
+        getHttpCode("ok"),
+    );
+};

@@ -1,10 +1,7 @@
 {
     "compilerOptions": {
         "target": "ES2020",
-        "lib": [
-            "DOM",
-            "ES2020"
-        ],
+        "lib": ["DOM", "ES2020"],
         "module": "ESNext",
         "jsx": "react-jsx",
         "noEmit": true,
@@ -16,19 +13,9 @@
         "useDefineForClassFields": true,
         "allowImportingTsExtensions": true,
         "paths": {
-            "@root/*": [
-                "./../shared/*"
-            ],
-            "@/*": [
-                "./src/*"
-            ],
-            "@types/*": [
-                "./types/*"
-            ]
+            "@shared/*": ["./../shared/*"],
+            "@/*": ["./*"]
         }
     },
-    "include": [
-        ".",
-        "./../shared"
-    ]
+    "include": [".", "./../shared"]
 }

@@ -1,5 +1,5 @@
 import type { AuthUserProfile } from "@/../types";
-import { AuthProviders } from "@root/types";
+import { AuthProviders } from "@shared/types";
 
 export const getGoogleUserProfileData = async (tokenExchangeCode: string) => {
     const clientId = process.env.GOOGLE_ID;
@@ -16,7 +16,7 @@ export const getGoogleUserProfileData = async (tokenExchangeCode: string) => {
 
     const authTokenRes = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded", },
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: params,
     });
     const tokenData = await authTokenRes.json();
@@ -24,7 +24,7 @@ export const getGoogleUserProfileData = async (tokenExchangeCode: string) => {
 
     // Fetch the user data using exchanged token
     const userDataRes = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`, {
-        headers: { Authorization: `token ${accessToken}`, },
+        headers: { Authorization: `token ${accessToken}` },
     });
     const userData = await userDataRes.json();
 
@@ -43,4 +43,4 @@ export const getGoogleUserProfileData = async (tokenExchangeCode: string) => {
     };
 
     return profile;
-}
+};

@@ -1,4 +1,4 @@
-import { AuthProviders } from "@root/types";
+import { AuthProviders } from "@shared/types";
 import type { AuthUserProfile } from "../../../types";
 
 export const getGitlabUserProfileData = async (tokenExchangeCode: string) => {
@@ -43,4 +43,4 @@ export const getGitlabUserProfileData = async (tokenExchangeCode: string) => {
     };
 
     return profile;
-}
+};

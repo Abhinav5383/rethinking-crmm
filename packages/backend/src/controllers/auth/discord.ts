@@ -1,4 +1,4 @@
-import { AuthProviders } from "@root/types";
+import { AuthProviders } from "@shared/types";
 import type { AuthUserProfile } from "../../../types";
 
 export const getDiscordUserProfileData = async (tokenExchangeCode: string) => {
@@ -32,7 +32,6 @@ export const getDiscordUserProfileData = async (tokenExchangeCode: string) => {
     });
     const userProfile = await userDataRes.json();
 
-
     const profile: AuthUserProfile = {
         name: userProfile?.name || null,
         email: userProfile?.email || null,
@@ -47,4 +46,4 @@ export const getDiscordUserProfileData = async (tokenExchangeCode: string) => {
     };
 
     return profile;
-}
+};

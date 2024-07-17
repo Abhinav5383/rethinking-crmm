@@ -87,7 +87,7 @@ backend/
     - `routes/`  =>  Registration of endpoints to their respective handlers
     - `auth/`  =>  Authentication logic such as signIn, signUp, sessionValidation and sessionCreation
     - `services/`  =>  All the logic for integration with external services such as Email sender, search service (Meilisearch), CDN etc.
-    - `utils/`  =>  For all the common shared functions exclusive to the backend (shared utils will reside inside `@root/lib/utils`)
+    - `utils/`  =>  For all the common shared functions exclusive to the backend (shared utils will reside inside `@shared/lib/utils`)
 
 <br>
 

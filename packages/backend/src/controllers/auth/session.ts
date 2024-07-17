@@ -4,8 +4,8 @@ import { generateRandomString } from "@/utils";
 import { sendNewSigninAlertEmail } from "@/utils/email";
 import { defaultServerErrorResponse } from "@/utils/http";
 import type { User, UserSession } from "@prisma/client";
-import { authTokenCookieName, userSessionValidity } from "@root/config";
-import { UserSessionStates } from "@root/types";
+import { authTokenCookieName, userSessionValidity } from "@shared/config";
+import { UserSessionStates } from "@shared/types";
 import type { Context } from "hono";
 import { getCookie } from "hono/cookie";
 import { getUserDeviceDetails } from "./commons";
@@ -13,32 +13,38 @@ import { getUserDeviceDetails } from "./commons";
 interface CreateNewSessionProps {
     userId: number;
     providerName: string;
-    ctx: Context
+    ctx: Context;
     isFirstSignIn?: boolean;
-    user: Partial<User>
+    user: Partial<User>;
 }
 
 interface UserSessionCookieData {
-    userId: number,
-    sessionId: number,
+    userId: number;
+    sessionId: number;
     sessionToken: string;
 }
 
-export const createNewUserSession = async ({ userId, providerName, ctx, isFirstSignIn, user }: CreateNewSessionProps): Promise<UserSessionCookieData> => {
+export const createNewUserSession = async ({
+    userId,
+    providerName,
+    ctx,
+    isFirstSignIn,
+    user,
+}: CreateNewSessionProps): Promise<UserSessionCookieData> => {
     const deviceDetails = await getUserDeviceDetails(ctx);
 
     if (isFirstSignIn !== true) {
         const userSettings = await prisma.userSettings.findUnique({
             where: {
-                userId: userId
-            }
+                userId: userId,
+            },
         });
 
         if (userSettings?.signInAlerts === true) {
             const allPreviousSessions = await prisma.userSession.findMany({
                 where: {
-                    userId: userId
-                }
+                    userId: userId,
+                },
             });
 
             const currIp = deviceDetails.ipAddr;
@@ -61,7 +67,7 @@ export const createNewUserSession = async ({ userId, providerName, ctx, isFirstS
                     browserName: deviceDetails.browserName || "",
                     osName: deviceDetails.os.name || "",
                     authProviderName: providerName || "",
-                })
+                });
             }
         }
     }
@@ -77,8 +83,8 @@ export const createNewUserSession = async ({ userId, providerName, ctx, isFirstS
             browserName: deviceDetails.browserName || "",
             ipAddress: deviceDetails.ipAddr || "",
             city: deviceDetails.city || "",
-            country: deviceDetails.country || ""
-        }
+            country: deviceDetails.country || "",
+        },
     });
 
     // TODO: Send an alert on email if anything suspicious about the signin
@@ -86,9 +92,9 @@ export const createNewUserSession = async ({ userId, providerName, ctx, isFirstS
     return {
         userId: userId,
         sessionId: newSession.id,
-        sessionToken: newSession.sessionToken
-    }
-}
+        sessionToken: newSession.sessionToken,
+    };
+};
 
 export const getUserSessionCookie = (c: Context): UserSessionCookieData | null => {
     try {
@@ -98,7 +104,7 @@ export const getUserSessionCookie = (c: Context): UserSessionCookieData | null =
         }
         const cookieData = JSON.parse(cookie) as UserSessionCookieData;
         return cookieData;
-    } catch (error) { }
+    } catch (error) {}
     return null;
 };
 
@@ -121,19 +127,19 @@ export async function getLoggedInUser(sessionId: number, sessionToken: string): 
             },
         });
 
-        return {
-            ...session?.user,
-            sessionId,
-            sessionToken
-        } || null;
+        return (
+            {
+                ...session?.user,
+                sessionId,
+                sessionToken,
+            } || null
+        );
     } catch (error) {
         return null;
     }
 }
 
-export const getUserSession = async (
-    ctx: Context,
-): Promise<User | null> => {
+export const getUserSession = async (ctx: Context): Promise<User | null> => {
     try {
         // Get the current cookie data
         const cookie = getUserSessionCookie(ctx);
@@ -154,7 +160,6 @@ export const getUserSession = async (
     }
 };
 
-
 export const logOutUserSession = async (ctx: Context, sessionId: number) => {
     try {
         const userSession = ctx.get(ctxReqAuthSessionKey) as ContextUserSession;
@@ -164,23 +169,22 @@ export const logOutUserSession = async (ctx: Context, sessionId: number) => {
             deletedSession = await prisma.userSession.delete({
                 where: {
                     id: sessionId,
-                    userId: userSession.id
-                }
-            })
+                    userId: userSession.id,
+                },
+            });
         } else {
             deletedSession = await prisma.userSession.delete({
                 where: {
                     id: sessionId,
                     userId: userSession.id,
-                }
+                },
             });
-
         }
         if (!deletedSession?.id) {
-            return ctx.json({ success: false, message: `Cannot delete session id: ${sessionId}, idk why!` })
+            return ctx.json({ success: false, message: `Cannot delete session id: ${sessionId}, idk why!` });
         }
-        return ctx.json({ success: true, message: `Session with id: ${sessionId} logged out successfully` })
+        return ctx.json({ success: true, message: `Session with id: ${sessionId} logged out successfully` });
     } catch (error) {
-        return defaultServerErrorResponse(ctx)
+        return defaultServerErrorResponse(ctx);
     }
-}
+};

@@ -1,4 +1,4 @@
-import { BACKEND_PORT, BASE_API_ROUTE_PATH } from "@root/config";
+import { BACKEND_PORT, BASE_API_ROUTE_PATH } from "@shared/config";
 import type { SocketAddress } from "bun";
 import { Hono } from "hono";
 import { cors } from "hono/cors";

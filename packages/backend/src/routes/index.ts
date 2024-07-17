@@ -7,8 +7,8 @@ import bodyParserMiddleware from "@/middleware/parse-body";
 import { RateLimiterMiddleware } from "@/middleware/rate-limiter";
 import { AuthenticationMiddleware } from "@/middleware/session";
 import getHttpCode, { defaultInvalidReqResponse, defaultServerErrorResponse } from "@/utils/http";
-import { GetAuthProviderFromString, GetUserRoleFromString } from "@root/lib/utils/convertors";
-import type { LoggedInUserData } from "@root/types";
+import { GetAuthProviderFromString, GetUserRoleFromString } from "@shared/lib/utils/convertors";
+import type { LoggedInUserData } from "@shared/types";
 import { type Context, Hono } from "hono";
 
 const router = new Hono();
@@ -17,7 +17,6 @@ const router = new Hono();
 router.use("*", bodyParserMiddleware);
 router.use("*", RateLimiterMiddleware);
 router.use("*", AuthenticationMiddleware);
-
 
 // AUTH
 router.get("/me", async (ctx: Context) => {
@@ -35,8 +34,8 @@ router.get("/me", async (ctx: Context) => {
             avatarImageUrl: userSession.avatarImageUrl,
             avatarProvider: GetAuthProviderFromString(userSession?.avatarImageProvier || ""),
             sessionId: userSession.sessionId,
-            sessionToken: userSession.sessionToken
-        }
+            sessionToken: userSession.sessionToken,
+        };
 
         return ctx.json(formattedObject, getHttpCode("ok"));
     } catch (error) {
@@ -49,21 +48,19 @@ router.get(`/auth/${AuthActionIntent.SIGN_IN}/get-oauth-url/:authProvider`, asyn
     try {
         const url = getOAuthSignInUrl(ctx, ctx.req.param("authProvider"), AuthActionIntent.SIGN_IN);
         return ctx.json({ url }, getHttpCode("ok"));
-
     } catch (error) {
         return defaultServerErrorResponse(ctx);
     }
-})
+});
 
 router.get(`/auth/${AuthActionIntent.SIGN_UP}/get-oauth-url/:authProvider`, async (ctx: Context) => {
     try {
         const url = getOAuthSignInUrl(ctx, ctx.req.param("authProvider"), AuthActionIntent.SIGN_UP);
         return ctx.json({ url }, getHttpCode("ok"));
-
     } catch (error) {
         return defaultServerErrorResponse(ctx);
     }
-})
+});
 
 router.get(`/auth/callback/${AuthActionIntent.SIGN_IN}/:authProvider`, async (ctx: Context) => {
     try {
@@ -78,7 +75,7 @@ router.get(`/auth/callback/${AuthActionIntent.SIGN_IN}/:authProvider`, async (ct
         console.error(error);
         return defaultServerErrorResponse(ctx);
     }
-})
+});
 
 router.get(`/auth/callback/${AuthActionIntent.SIGN_UP}/:authProvider`, async (ctx: Context) => {
     try {
@@ -93,13 +90,16 @@ router.get(`/auth/callback/${AuthActionIntent.SIGN_UP}/:authProvider`, async (ct
         console.error(error);
         return defaultServerErrorResponse(ctx);
     }
-})
+});
 
 router.post("/auth/logout", async (ctx: Context) => {
     try {
         const authSession = ctx.get(ctxReqAuthSessionKey) as ContextUserSession | undefined;
         if (!authSession?.id) {
-            return ctx.json({ message: "You're not even logged in, what makes you think you can do a logout!" }, getHttpCode("unauthenticated"))
+            return ctx.json(
+                { message: "You're not even logged in, what makes you think you can do a logout!" },
+                getHttpCode("unauthenticated"),
+            );
         }
 
         const targetSessionId = ctx.get(ctxReqBodyKey)?.sessionId || null;
@@ -113,7 +113,6 @@ router.post("/auth/logout", async (ctx: Context) => {
         console.error(error);
         return defaultServerErrorResponse(ctx);
     }
-})
-
+});
 
 export default router;

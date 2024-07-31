@@ -1,7 +1,7 @@
 import prisma from "@/services/prisma";
 import { getCurrSessionFromCtx } from "@/utils";
 import getHttpCode from "@/utils/http";
-import type { addPasswordFormSchema, profileUpdateFormSchema } from "@shared/schemas/settings";
+import type { profileUpdateFormSchema } from "@shared/schemas/settings";
 import type { LinkedProvidersListData } from "@shared/types";
 import type { Context } from "hono";
 import type { z } from "zod";
@@ -59,22 +59,4 @@ export const getLinkedAuthProviders = async (ctx: Context) => {
     }
 
     return ctx.json(providersList);
-};
-
-export const addNewPassword = async (ctx: Context, formData: z.infer<typeof addPasswordFormSchema>) => {
-    const userSession = getCurrSessionFromCtx(ctx);
-    if (!userSession || userSession.hasAPassword === true) return ctx.json({}, getHttpCode("bad_request"));
-
-    // Get the hashed password
-
-    // await prisma.user.update({
-    //     where: {
-    //         id: userSession.id,
-    //     },
-    //     data: {
-    //         unverifiedNewPassword: "",
-    //     },
-    // });
-
-    return ctx.json({ message: "Confirmation email sent.", success: true }, getHttpCode("ok"));
 };

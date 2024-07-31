@@ -8,20 +8,20 @@ datasource db {
 }
 
 model User {
-    id                    Int       @id @default(autoincrement())
-    fullName              String    @db.VarChar(32)
-    userName              String    @db.VarChar(32)
-    email                 String    @unique @db.VarChar(256)
-    role                  String    @default("user")
-    dateEmailVerified     DateTime?
-    password              String?   @db.VarChar(256)
-    unverifiedNewPassword String?   @db.VarChar(256)
-    avatarImageUrl        String?   @db.VarChar(256)
-    avatarImageProvier    String?   @db.VarChar(32)
+    id                 Int       @id @default(autoincrement())
+    fullName           String    @db.VarChar(32)
+    userName           String    @db.VarChar(32)
+    email              String    @unique @db.VarChar(256)
+    role               String    @default("user")
+    dateEmailVerified  DateTime?
+    password           String?   @db.VarChar(256)
+    avatarImageUrl     String?   @db.VarChar(256)
+    avatarImageProvier String?   @db.VarChar(32)
 
-    authAccounts AuthAccount[] @relation(name: "UserAuthAccount")
-    sessions     UserSession[] @relation(name: "UserSession")
-    settings     UserSettings? @relation(name: "UserSettings")
+    authAccounts       AuthAccount[]       @relation(name: "UserAuthAccount")
+    sessions           UserSession[]       @relation(name: "UserSession")
+    settings           UserSettings?       @relation(name: "UserSettings")
+    confirmationEmails ConfirmationEmail[] @relation(name: "ConfirmationEmails")
 }
 
 model UserSettings {
@@ -66,4 +66,15 @@ model UserSession {
     country     String? @db.VarChar(32)
 
     user User @relation(name: "UserSession", fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ConfirmationEmail {
+    id          Int      @id @default(autoincrement())
+    userId      Int
+    actionType  String   @db.VarChar(64)
+    code        String   @db.VarChar(128) @unique
+    dateCreated DateTime @default(now())
+    data        String?
+
+    user User @relation(name: "ConfirmationEmails", fields: [userId], references: [id], onDelete: Cascade)
 }

@@ -2,7 +2,7 @@ import type { AuthUserProfile } from "@/../types";
 import prisma from "@/services/prisma";
 import { generateRandomString, setUserCookie } from "@/utils";
 import getHttpCode from "@/utils/http";
-import { authTokenCookieName } from "@shared/config";
+import { AUTHTOKEN_COOKIE_NAME } from "@shared/config";
 import { AuthProviders } from "@shared/types";
 import type { Context } from "hono";
 import { createNewAuthAccount } from "../commons";
@@ -102,7 +102,7 @@ export const oAuthSignUpHandler = async (ctx: Context, authProvider: string, tok
         isFirstSignIn: true,
         user: newUser,
     });
-    setUserCookie(ctx, authTokenCookieName, JSON.stringify(newSession));
+    setUserCookie(ctx, AUTHTOKEN_COOKIE_NAME, JSON.stringify(newSession));
 
     return ctx.json(
         {

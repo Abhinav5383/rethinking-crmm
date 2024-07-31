@@ -4,7 +4,7 @@ import { generateRandomString } from "@/utils";
 import { sendNewSigninAlertEmail } from "@/utils/email";
 import { defaultServerErrorResponse } from "@/utils/http";
 import type { User, UserSession } from "@prisma/client";
-import { authTokenCookieName, userSessionValidity } from "@shared/config";
+import { AUTHTOKEN_COOKIE_NAME, USER_SESSION_VALIDITY } from "@shared/config";
 import { UserSessionStates } from "@shared/types";
 import type { Context } from "hono";
 import { getCookie } from "hono/cookie";
@@ -77,7 +77,7 @@ export const createNewUserSession = async ({
             userId: userId,
             sessionToken: generateRandomString(30),
             providerName: providerName,
-            dateExpires: new Date(Date.now() + userSessionValidity),
+            dateExpires: new Date(Date.now() + USER_SESSION_VALIDITY),
             status: UserSessionStates.ACTIVE,
             os: `${deviceDetails.os.name} ${deviceDetails.os.version || ""}`,
             browserName: deviceDetails.browserName || "",
@@ -98,7 +98,7 @@ export const createNewUserSession = async ({
 
 export const getUserSessionCookie = (c: Context): UserSessionCookieData | null => {
     try {
-        const cookie = getCookie(c, authTokenCookieName);
+        const cookie = getCookie(c, AUTHTOKEN_COOKIE_NAME);
         if (!cookie) {
             return null;
         }

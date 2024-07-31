@@ -6,7 +6,7 @@ import { oAuthSignUpHandler } from "@/controllers/auth/signup";
 import { LoginProtectedRoute } from "@/middleware/session";
 import { getCurrSessionFromCtx } from "@/utils";
 import getHttpCode, { defaultInvalidReqResponse, defaultServerErrorResponse } from "@/utils/http";
-import { GetAuthProviderFromString, GetUserRoleFromString } from "@shared/lib/utils/convertors";
+import { getAuthProviderFromString, getUserRoleFromString } from "@shared/lib/utils/convertors";
 import { AuthActionIntent, type LoggedInUserData } from "@shared/types";
 import { type Context, Hono } from "hono";
 
@@ -22,10 +22,10 @@ authRouter.get("/me", async (ctx: Context) => {
             email: userSession.email,
             fullName: userSession.fullName,
             userName: userSession.userName,
-            role: GetUserRoleFromString(userSession.role),
+            role: getUserRoleFromString(userSession.role),
             hasAPassword: !!userSession.password,
             avatarImageUrl: userSession.avatarImageUrl,
-            avatarProvider: GetAuthProviderFromString(userSession?.avatarImageProvier || ""),
+            avatarProvider: getAuthProviderFromString(userSession?.avatarImageProvier || ""),
             sessionId: userSession.sessionId,
             sessionToken: userSession.sessionToken,
         };

@@ -1,7 +1,7 @@
 import type { AuthActionIntent, AuthUserProfile } from "@/../types";
 import prisma from "@/services/prisma";
 import { generateRandomString, setUserCookie } from "@/utils";
-import { csrfStateCookieName } from "@shared/config";
+import { CSRF_STATE_COOKIE_NAME } from "@shared/config";
 import { AuthProviders } from "@shared/types";
 import type { Context } from "hono";
 // @ts-ignore
@@ -26,7 +26,7 @@ export const getOAuthSignInUrl = (ctx: Context, authProvider: string, actionInte
     const redirectUri = `${process.env.OAUTH_REDIRECT_URI}/${authProvider}`;
     const csrfState = `${actionIntent}-${generateRandomString(24)}`;
 
-    setUserCookie(ctx, csrfStateCookieName, csrfState, { httpOnly: false });
+    setUserCookie(ctx, CSRF_STATE_COOKIE_NAME, csrfState, { httpOnly: false });
 
     switch (authProvider) {
         case AuthProviders.GITHUB:

@@ -2,7 +2,7 @@ import type { AuthUserProfile } from "@/../types";
 import prisma from "@/services/prisma";
 import { setUserCookie } from "@/utils";
 import getHttpCode from "@/utils/http";
-import { authTokenCookieName, SITE_NAME_SHORT } from "@shared/config";
+import { AUTHTOKEN_COOKIE_NAME, SITE_NAME_SHORT } from "@shared/config";
 import { AuthProviders } from "@shared/types";
 import type { Context } from "hono";
 import { getDiscordUserProfileData } from "../discord";
@@ -92,7 +92,7 @@ export const oAuthSignInHandler = async (ctx: Context, authProvider: string, tok
         ctx: ctx,
         user: expectedUser,
     });
-    setUserCookie(ctx, authTokenCookieName, JSON.stringify(newSession));
+    setUserCookie(ctx, AUTHTOKEN_COOKIE_NAME, JSON.stringify(newSession));
 
     return ctx.json(
         { success: true, message: `Successfuly logged in using ${profileData.providerName} as ${expectedAuthAccount.user.fullName}` },

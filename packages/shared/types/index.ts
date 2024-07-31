@@ -4,7 +4,7 @@ export enum AuthProviders {
     DISCORD = "discord",
     GOOGLE = "google",
     CREDENTIAL = "credential",
-    UNKNOWN = "unknown"
+    UNKNOWN = "unknown",
 }
 
 export enum GlobalUserRoles {
@@ -16,7 +16,7 @@ export enum GlobalUserRoles {
 
 export enum UserSessionStates {
     ACTIVE = "active",
-    UNVERIFIED = "unverified"
+    UNVERIFIED = "unverified",
 }
 
 export interface LoggedInUserData {
@@ -30,4 +30,27 @@ export interface LoggedInUserData {
     role: GlobalUserRoles;
     sessionId: number;
     sessionToken: string;
+}
+
+export enum ProjectType {
+    MOD = "mod",
+    MODPACK = "modpack",
+    SHADER = "shader",
+    RESOURCE_PACK = "resource-pack",
+    DATAPACK = "datapack",
+    PLUGIN = "plugin",
+}
+
+export enum AuthActionIntent {
+    SIGN_IN = "signin",
+    SIGN_UP = "signup",
+    LINK_PROVIDER = "link-provider",
+}
+
+export interface LinkedProvidersListData {
+    id: number;
+    providerName: string;
+    providerAccountId: number | string;
+    providerAccountEmail: string;
+    avatarImageUrl?: string | null;
 }

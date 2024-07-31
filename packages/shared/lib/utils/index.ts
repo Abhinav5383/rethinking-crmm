@@ -5,8 +5,31 @@ export const Capitalize = (str: string, eachWord = false) => {
 
     let newStr = "";
     for (const word of str.split(" ")) {
-        newStr += `${word[0].toUpperCase()}${word.length > 1 ? word.slice(1) : ""} `
+        newStr += `${word[0].toUpperCase()}${word.length > 1 ? word.slice(1) : ""} `;
     }
 
     return newStr;
+};
+
+export function CapitalizeAndFormatString(str: string | null | undefined) {
+    if (!str) return str;
+
+    return Capitalize(str).replaceAll("_", " ").replaceAll("-", " ");
+}
+
+export function createURLSafeSlug(slug: string) {
+    const allowedURLCharacters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`!@$()-_.,"';
+
+    const result = {
+        validInput: false,
+        value: "",
+    };
+
+    for (const char of slug.replaceAll(" ", "-").toLowerCase()) {
+        if (allowedURLCharacters.includes(char)) {
+            result.value += char;
+        }
+    }
+
+    return result;
 }

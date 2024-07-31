@@ -36,10 +36,6 @@ async function fetchUserEmail(access_token: string): Promise<EmailData | null> {
         }
     }
 
-    if (userEmailObj?.verified !== true) {
-        throw new Error("Your email is not verified. First verify your email on Github");
-    }
-
     return userEmailObj;
 }
 export const getGithubUserProfileData = async (tokenExchangeCode: string) => {
@@ -62,6 +58,7 @@ export const getGithubUserProfileData = async (tokenExchangeCode: string) => {
     const profile: AuthUserProfile = {
         name: userData?.name || null,
         email: userEmailData?.email || "",
+        emailVerified: userEmailData?.verified === true,
         providerName: AuthProviders.GITHUB,
         providerAccountId: userData?.id || null,
         authType: "oauth",

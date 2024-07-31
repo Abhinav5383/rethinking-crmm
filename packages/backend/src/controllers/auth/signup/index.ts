@@ -32,7 +32,13 @@ export const oAuthSignUpHandler = async (ctx: Context, authProvider: string, tok
             profileData = null;
     }
 
-    if (!profileData || !profileData?.email || !profileData?.providerName || !profileData?.providerAccountId) {
+    if (
+        !profileData ||
+        !profileData?.email ||
+        !profileData?.providerName ||
+        !profileData?.providerAccountId ||
+        !profileData.emailVerified
+    ) {
         return ctx.json(
             {
                 message: "Invalid profile data received from the auth provider, most likely the code provided was invalid",

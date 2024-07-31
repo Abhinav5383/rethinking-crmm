@@ -35,6 +35,7 @@ export const getDiscordUserProfileData = async (tokenExchangeCode: string) => {
     const profile: AuthUserProfile = {
         name: userProfile?.name || null,
         email: userProfile?.email || null,
+        emailVerified: userProfile?.verified === true,
         providerName: AuthProviders.DISCORD,
         providerAccountId: userProfile?.id || null,
         authType: "oauth",

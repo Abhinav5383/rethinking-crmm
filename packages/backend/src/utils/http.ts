@@ -21,20 +21,26 @@ const getHttpCode = (codeType: httpCodeType) => {
         default:
             return 200;
     }
-}
+};
 
 export default getHttpCode;
 
 export const defaultServerErrorResponse = (ctx: Context, message?: string) => {
-    return ctx.json({
-        message: message || "Internal server error",
-        succcess: false
-    }, getHttpCode("server_error"));
-}
+    return ctx.json(
+        {
+            message: message || "Internal server error",
+            succcess: false,
+        },
+        getHttpCode("server_error"),
+    );
+};
 
 export const defaultInvalidReqResponse = (ctx: Context, message?: string) => {
-    return ctx.json({
-        message: message || "Invalid request",
-        succcess: false
-    }, getHttpCode("bad_request"));
-}
+    return ctx.json(
+        {
+            message: message || "Invalid request",
+            succcess: false,
+        },
+        getHttpCode("bad_request"),
+    );
+};

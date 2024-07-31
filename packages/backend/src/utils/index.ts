@@ -1,6 +1,8 @@
 import type { Context } from "hono";
 import { deleteCookie, setCookie } from "hono/cookie";
 import type { CookieOptions } from "hono/utils/cookie";
+import { ctxReqAuthSessionKey } from "../../types";
+import type { LoggedInUserData } from "@shared/types";
 
 const shuffleCharacters = (str: string) => {
     const characters = str.split("");
@@ -26,10 +28,14 @@ export const setUserCookie = (ctx: Context, name: string, value: string, options
         domain: "localhost",
         httpOnly: true,
         secure: true,
-        ...options
-    })
-}
+        ...options,
+    });
+};
 
 export const deleteUserCookie = (ctx: Context, name: string, options?: CookieOptions) => {
     return deleteCookie(ctx, name, options);
-}
+};
+
+export const getCurrSessionFromCtx = (ctx: Context) => {
+    return ctx.get(ctxReqAuthSessionKey) as LoggedInUserData | undefined;
+};

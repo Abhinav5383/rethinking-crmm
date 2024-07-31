@@ -11,9 +11,9 @@ export const GetUserRoleFromString = (roleName: string) => {
         case GlobalUserRoles.USER:
             return GlobalUserRoles.USER;
         default:
-            return GlobalUserRoles.USER
+            return GlobalUserRoles.USER;
     }
-}
+};
 
 export const GetAuthProviderFromString = (providerName: string) => {
     switch (providerName) {
@@ -28,6 +28,6 @@ export const GetAuthProviderFromString = (providerName: string) => {
         case AuthProviders.CREDENTIAL:
             return AuthProviders.CREDENTIAL;
         default:
-            AuthProviders.UNKNOWN
+            return AuthProviders.UNKNOWN;
     }
-}
+};

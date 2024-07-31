@@ -32,6 +32,7 @@ export const getGitlabUserProfileData = async (tokenExchangeCode: string) => {
     const profile: AuthUserProfile = {
         name: userProfile?.name || null,
         email: userProfile?.email || null,
+        emailVerified: userProfile?.bot === false && userProfile?.locked === false && userProfile?.can_create_project === true,
         providerName: AuthProviders.GITLAB,
         providerAccountId: userProfile?.id || null,
         authType: "oauth",

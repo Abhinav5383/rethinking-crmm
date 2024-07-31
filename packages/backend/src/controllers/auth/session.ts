@@ -163,23 +163,13 @@ export const getUserSession = async (ctx: Context): Promise<User | null> => {
 export const logOutUserSession = async (ctx: Context, sessionId: number) => {
     try {
         const userSession = ctx.get(ctxReqAuthSessionKey) as ContextUserSession;
-        let deletedSession: UserSession | undefined | null;
+        const deletedSession = await prisma.userSession.delete({
+            where: {
+                id: sessionId,
+                userId: userSession.id,
+            },
+        });
 
-        if (userSession.id === sessionId) {
-            deletedSession = await prisma.userSession.delete({
-                where: {
-                    id: sessionId,
-                    userId: userSession.id,
-                },
-            });
-        } else {
-            deletedSession = await prisma.userSession.delete({
-                where: {
-                    id: sessionId,
-                    userId: userSession.id,
-                },
-            });
-        }
         if (!deletedSession?.id) {
             return ctx.json({ success: false, message: `Cannot delete session id: ${sessionId}, idk why!` });
         }

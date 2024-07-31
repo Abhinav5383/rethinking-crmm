@@ -1,0 +1,54 @@
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { CheckIcon, CopyIcon } from "lucide-react";
+
+type Props = {
+    text: string | number;
+    label?: string;
+    className?: string;
+    labelClassName?: string;
+    iconClassName?: string;
+    successMessage?: string;
+};
+
+let timeoutRef: number;
+
+const CopyBtn = ({ text, label, className, labelClassName, iconClassName }: Props) => {
+    const [showTickIcon, setShowTickIcon] = useState(false);
+
+    const copyText = () => {
+        try {
+            clearTimeout(timeoutRef);
+            navigator.clipboard.writeText(text.toString());
+            setShowTickIcon(true);
+            timeoutRef = window.setTimeout(() => {
+                setShowTickIcon(false);
+            }, 2_000);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    return (
+        <Button
+            size="icon"
+            id={`copy-btn-${text}-${label}`}
+            variant="ghost"
+            aria-label="Copy"
+            className={cn("w-fit h-fit px-1 min-h-6 min-w-6 gap-2 shrink-0 flex items-center justify-center", className)}
+            onClick={copyText}
+        >
+            {label ? <span className={cn("text-sm text-muted-foreground", labelClassName)}>{label}</span> : null}
+            <div className="w-btn-icon h-btn-icon flex items-center justify-center">
+                {showTickIcon ? (
+                    <CheckIcon className={cn("w-btn-icon h-btn-icon text-success-foreground", iconClassName)} />
+                ) : (
+                    <CopyIcon className={cn("w-3 h-3 text-extra-muted-foreground", iconClassName)} />
+                )}
+            </div>
+        </Button>
+    );
+};
+
+export default CopyBtn;

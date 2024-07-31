@@ -2,7 +2,7 @@ import type { AuthUserProfile } from "@/../types";
 import prisma from "@/services/prisma";
 import { setUserCookie } from "@/utils";
 import getHttpCode from "@/utils/http";
-import { authTokenCookieName } from "@shared/config";
+import { authTokenCookieName, SITE_NAME_SHORT } from "@shared/config";
 import { AuthProviders } from "@shared/types";
 import type { Context } from "hono";
 import { getDiscordUserProfileData } from "../discord";
@@ -10,6 +10,7 @@ import { getGithubUserProfileData } from "../github";
 import { getGitlabUserProfileData } from "../gitlab";
 import { getGoogleUserProfileData } from "../google";
 import { createNewUserSession } from "../session";
+import { Capitalize } from "@shared/lib/utils";
 
 export const oAuthSignInHandler = async (ctx: Context, authProvider: string, tokenExchangeCode: string) => {
     let profileData: AuthUserProfile | null;
@@ -31,7 +32,13 @@ export const oAuthSignInHandler = async (ctx: Context, authProvider: string, tok
             profileData = null;
     }
 
-    if (!profileData || !profileData?.email || !profileData?.providerName || !profileData?.providerAccountId) {
+    if (
+        !profileData ||
+        !profileData?.email ||
+        !profileData?.providerName ||
+        !profileData?.providerAccountId ||
+        !profileData.emailVerified
+    ) {
         return ctx.json(
             {
                 message: "Invalid profile data received from the auth provider, most likely the code provided was invalid",
@@ -63,7 +70,7 @@ export const oAuthSignInHandler = async (ctx: Context, authProvider: string, tok
         return ctx.json(
             {
                 success: false,
-                message: `The ${profileData.providerName} provider with email: '${profileData.email}' is not linked with any UserAccount. Please try signing in with a linked auth provider`,
+                message: `This ${Capitalize(profileData.providerName)} account (${profileData.email}) is not linked to any ${SITE_NAME_SHORT} user account. First link ${Capitalize(profileData.providerName)} auth provider to your user account to be able to signin using ${Capitalize(profileData.providerName)}`,
             },
             getHttpCode("bad_request"),
         );
@@ -73,7 +80,7 @@ export const oAuthSignInHandler = async (ctx: Context, authProvider: string, tok
         return ctx.json(
             {
                 success: false,
-                message: `No ${authProvider} AuthAccount exists with email: '${profileData.email}' nor does a User exist with this email address`,
+                message: `This ${Capitalize(authProvider)} account is not linked to any user account nor does a user exist with the email address '${profileData.email}'. If you meant to create a new account, signup instead`,
             },
             getHttpCode("bad_request"),
         );

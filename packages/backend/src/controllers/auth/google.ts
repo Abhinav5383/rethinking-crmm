@@ -32,6 +32,7 @@ export const getGoogleUserProfileData = async (tokenExchangeCode: string) => {
     const profile: AuthUserProfile = {
         name: userData?.name || "",
         email: userData?.email || null,
+        emailVerified: userData?.email_verified === true,
         providerName: AuthProviders.GOOGLE,
         providerAccountId: userData?.sub || null,
         authType: "oauth",

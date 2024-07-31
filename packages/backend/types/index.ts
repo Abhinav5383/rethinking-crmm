@@ -6,6 +6,7 @@ export const ctxReqAuthSessionKey = "user-session";
 export interface AuthUserProfile {
     name?: string | null;
     email: string;
+    emailVerified: boolean;
     providerName: string;
     providerAccountId: string | number;
     authType?: string | null;
@@ -16,19 +17,13 @@ export interface AuthUserProfile {
     avatarImage?: string | null;
 }
 
-export enum AuthActionIntent {
-    SIGN_IN = "signin",
-    SIGN_UP = "signup",
-    LINK_PROVIDER = "link-provider"
-}
-
 export interface UserDeviceDetails {
     ipAddress: string;
     browser: string;
     os: {
         name: string;
         version?: string;
-    },
+    };
     city: string;
     country: string;
 }

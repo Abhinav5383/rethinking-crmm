@@ -14,3 +14,5 @@
     ```
 
 - Make sure to add comments when doing complex or hacky things if possible with examples
+
+NOTE:- You may find this in many places that instead of having a separate loading state for things that load only once on render, a value of `undefinded` has been used to represent that it's still uninitialized and the data is still loading, while using `null` to represent that the data fetching is complete and the value is actually empty

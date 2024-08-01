@@ -8,8 +8,14 @@ export const BACKEND_PORT = 5500;
 export const BASE_API_ROUTE_PATH = "/api";
 
 // COOKIE NAMES
-export const csrfStateCookieName = "csrfState";
-export const authTokenCookieName = "auth-token";
+export const CSRF_STATE_COOKIE_NAME = "csrfState";
+export const AUTHTOKEN_COOKIE_NAME = "auth-token";
 
 // AUTH
-export const userSessionValidity = 2592000000; // 30 days
+export const USER_SESSION_VALIDITY = 2592000000; // 30 days
+export const PASSWORD_HASH_SALT_ROUNDS = 8;
+
+// Confirmation email expiry durations
+export const CONFIRM_NEW_PASSWORD_EMAIL_VALIDITY_ms = 7200_000; // 2 hour
+export const CHANGE_ACCOUNT_PASSWORD_EMAIL_VALIDITY_ms = 7200_000; // 2 hour
+export const DELETE_USER_ACCOUNT_EMAIL_VALIDITY_ms = 7200_000; // 2 hour

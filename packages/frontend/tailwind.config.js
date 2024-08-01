@@ -73,6 +73,7 @@ module.exports = {
                 "nav-item": "2.5rem",
                 "btn-icon": "1rem",
                 "btn-icon-lg": "1.2rem",
+                "form-submit-btn": "2.25rem",
             },
             width: {
                 "btn-icon": "1rem",

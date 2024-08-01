@@ -10,7 +10,8 @@ datasource db {
 model User {
     id                 Int       @id @default(autoincrement())
     fullName           String    @db.VarChar(32)
-    userName           String    @db.VarChar(32)
+    userName           String    @unique @db.VarChar(32)
+    userNameLowerCase  String    @unique @db.VarChar(32)
     email              String    @unique @db.VarChar(256)
     role               String    @default("user")
     dateEmailVerified  DateTime?
@@ -49,14 +50,15 @@ model AuthAccount {
 }
 
 model UserSession {
-    id             Int       @id @default(autoincrement())
-    userId         Int
-    sessionToken   String    @db.VarChar(64)
-    dateCreated    DateTime? @default(now())
-    dateExpires    DateTime
-    dateLastActive DateTime? @default(now())
-    providerName   String?   @db.VarChar(32)
-    status         String
+    id               Int       @id @default(autoincrement())
+    userId           Int
+    sessionToken     String    @db.VarChar(64)
+    dateCreated      DateTime? @default(now())
+    dateExpires      DateTime
+    dateLastActive   DateTime? @default(now())
+    providerName     String?   @db.VarChar(32)
+    status           String
+    revokeAccessCode String    @unique @db.VarChar(64)
 
     // Device info
     browserName String? @db.VarChar(32)

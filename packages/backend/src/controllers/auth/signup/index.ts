@@ -1,7 +1,7 @@
 import type { AuthUserProfile } from "@/../types";
 import prisma from "@/services/prisma";
 import { generateRandomString, setUserCookie } from "@/utils";
-import getHttpCode from "@/utils/http";
+import httpCode from "@/utils/http";
 import { AUTHTOKEN_COOKIE_NAME } from "@shared/config";
 import { AuthProviders } from "@shared/types";
 import type { Context } from "hono";
@@ -45,7 +45,7 @@ export const oAuthSignUpHandler = async (ctx: Context, authProvider: string, tok
                 success: false,
                 data: profileData,
             },
-            getHttpCode("bad_request"),
+            httpCode("bad_request"),
         );
     }
 
@@ -59,7 +59,7 @@ export const oAuthSignUpHandler = async (ctx: Context, authProvider: string, tok
     if (possiblyAlreadyExistingAuthAccount?.id) {
         return ctx.json(
             { success: false, message: "A user already exists with the account you are trying to sign up with." },
-            getHttpCode("bad_request"),
+            httpCode("bad_request"),
         );
     }
 
@@ -72,15 +72,17 @@ export const oAuthSignUpHandler = async (ctx: Context, authProvider: string, tok
     if (possiblyAlreadyExistingUser?.id) {
         return ctx.json(
             { success: false, message: "A user already exists with the account you are trying to sign up with." },
-            getHttpCode("bad_request"),
+            httpCode("bad_request"),
         );
     }
 
+    const userName = generateRandomString(24);
     // Finally create a user
     const newUser = await prisma.user.create({
         data: {
             fullName: profileData?.name || "",
-            userName: generateRandomString(16),
+            userName: userName,
+            userNameLowerCase: userName.toLowerCase(),
             email: profileData.email,
             dateEmailVerified: new Date(),
             avatarImageUrl: profileData.avatarImage,
@@ -109,6 +111,6 @@ export const oAuthSignUpHandler = async (ctx: Context, authProvider: string, tok
             success: true,
             message: `Successfully signed up using ${authProvider} as ${newUser.fullName}`,
         },
-        getHttpCode("ok"),
+        httpCode("ok"),
     );
 };

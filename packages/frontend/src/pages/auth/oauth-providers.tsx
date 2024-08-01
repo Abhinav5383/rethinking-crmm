@@ -2,7 +2,7 @@ import { DiscordIcon, GoogleIcon, GithubIcon, GitlabIcon } from "@/components/ic
 import { Button } from "@/components/ui/button";
 import { AuthActionIntent, AuthProviders } from "@shared/types";
 import React, { useState } from "react";
-import { AbsolutePositionedSpinner } from "@/components/ui/spinner";
+import { AbsolutePositionedSpinner, LoadingSpinner } from "@/components/ui/spinner";
 import useFetch from "@/src/hooks/fetch";
 
 export const ConfiguredAuthProviders = [AuthProviders.GITHUB, AuthProviders.DISCORD, AuthProviders.GOOGLE, AuthProviders.GITLAB];
@@ -26,9 +26,25 @@ export const authProvidersList = [
     },
 ];
 
-const OAuthProvidersWidget = ({ actionIntent = AuthActionIntent.SIGN_IN }: { actionIntent: AuthActionIntent }) => {
-    const [loading, setLoading] = useState(false);
-
+const OAuthProvidersWidget = ({
+    actionIntent = AuthActionIntent.SIGN_IN,
+    disabled = false,
+    isLoading,
+    setIsLoading,
+}: {
+    actionIntent: AuthActionIntent;
+    disabled?: boolean;
+    isLoading: {
+        value: boolean;
+        provider: AuthProviders | null;
+    };
+    setIsLoading: React.Dispatch<
+        React.SetStateAction<{
+            value: boolean;
+            provider: AuthProviders | null;
+        }>
+    >;
+}) => {
     return (
         <>
             {authProvidersList?.map((provider) => {
@@ -36,21 +52,27 @@ const OAuthProvidersWidget = ({ actionIntent = AuthActionIntent.SIGN_IN }: { act
                     <React.Fragment key={provider.name}>
                         <Button
                             onClick={async () => {
-                                setLoading(true);
+                                if (isLoading.value === true) return;
+
+                                setIsLoading({ value: true, provider: provider.name });
                                 const signinUrl = await getOAuthUrl(provider.name, actionIntent);
                                 window.location.href = signinUrl;
                             }}
                             aria-label={`Continue using ${provider.name}`}
                             className="w-full font-medium capitalize"
                             variant="secondary"
+                            disabled={isLoading.value || disabled}
                         >
-                            <i className="min-w-6 flex items-center justify-start">{provider.icon}</i>
+                            {isLoading.provider === provider.name ? (
+                                <LoadingSpinner size="xs" />
+                            ) : (
+                                <i className="min-w-6 flex items-center justify-start">{provider.icon}</i>
+                            )}
                             {provider.name}
                         </Button>
                     </React.Fragment>
                 );
             })}
-            {loading === true && <AbsolutePositionedSpinner />}
         </>
     );
 };

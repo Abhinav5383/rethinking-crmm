@@ -1,13 +1,14 @@
 import { BrandIcon } from "@/components/icons";
-import "./styles.css";
+import "@/src/styles.css";
 
+import { Button } from "@/components/ui/button";
+import { SecondaryButtonLink } from "@/components/ui/link";
+import { LoadingSpinner } from "@/components/ui/spinner";
+import { useSession } from "@/src/contexts/auth";
 import { SITE_NAME_SHORT } from "@shared/config";
+import { createPortal } from "react-dom";
 import { Helmet } from "react-helmet";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { useSession } from "./contexts/auth";
-import { LoadingSpinner } from "@/components/ui/spinner";
-import { SecondaryButtonLink } from "@/components/ui/link";
 
 const HomePage = () => {
     const { session } = useSession();
@@ -16,6 +17,15 @@ const HomePage = () => {
 
     return (
         <>
+            {createPortal(
+                <div className="relative w-full h-[150vh] flex items-center justify-center overflow-hidden">
+                    <div className="absolute w-full h-full hero_section_grid_bg top-0 left-0">
+                        <div className="hero_section_fading_bg w-full h-full bg-gradient-to-b from-transparent to-background" />
+                    </div>
+                </div>,
+                document.body.querySelector("#hero_section_bg_portal") as Element,
+            )}
+
             <Helmet>
                 <title>{SITE_NAME_SHORT}</title>
                 <meta name="description" content="All your favourite Cosmic Reach mods" />
@@ -47,8 +57,8 @@ const HomePage = () => {
                             </span>
                         </h2>
 
-                        <div className="flex flex-col items-center justify-center gap-1">
-                            <h2 className="w-full text-center flex flex-wrap items-center justify-center text-lg lg:text-xl">
+                        <div className="flex flex-col items-center justify-center">
+                            <h2 className="w-full text-center flex flex-wrap items-center justify-center text-lg">
                                 The best place for your&nbsp;
                                 <a
                                     href="https://finalforeach.itch.io/cosmic-reach"
@@ -61,7 +71,7 @@ const HomePage = () => {
                                 </a>
                                 &nbsp;mods.
                             </h2>
-                            <h2 className="text-lg lg:text-xl flex text-center text-foreground-muted">
+                            <h2 className="text-lg flex text-center text-foreground-muted">
                                 Discover, play, and create content, all in one spot.
                             </h2>
                         </div>

@@ -5,7 +5,7 @@ import { FormErrorMessage } from "@/components/ui/form-message";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoginFormSchema } from "@shared/schemas/auth";
-import { AuthActionIntent } from "@shared/types";
+import { AuthActionIntent, AuthProviders } from "@shared/types";
 import { LogInIcon } from "lucide-react";
 import { useState } from "react";
 import { Helmet } from "react-helmet";
@@ -13,9 +13,18 @@ import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import type { z } from "zod";
 import OAuthProvidersWidget from "../oauth-providers";
+import { SITE_NAME_SHORT } from "@shared/config";
+import HorizontalSeparator from "@/components/ui/hr-separator";
+import { LoadingSpinner } from "@/components/ui/spinner";
+import useFetch from "@/src/hooks/fetch";
+import { toast } from "sonner";
+import { useSession } from "@/src/contexts/auth";
 
 const LoginPage = () => {
+    const { validateSession } = useSession();
     const [formError, setFormError] = useState("");
+    const [isLoading, setIsLoading] = useState<{ value: boolean; provider: AuthProviders | null }>({ value: false, provider: null });
+
     const loginForm = useForm<z.infer<typeof LoginFormSchema>>({
         resolver: zodResolver(LoginFormSchema),
         defaultValues: {
@@ -24,12 +33,32 @@ const LoginPage = () => {
         },
     });
 
-    const handleCredentialLogin = async () => {};
+    const handleCredentialLogin = async () => {
+        try {
+            if (isLoading.value === true) return;
+            setIsLoading({ value: true, provider: AuthProviders.CREDENTIAL });
+
+            const response = await useFetch(`/api/auth/${AuthActionIntent.SIGN_IN}/${AuthProviders.CREDENTIAL}`, {
+                method: "POST",
+                body: JSON.stringify(loginForm.getValues()),
+            });
+            const result = await response.json();
+
+            if (!response.ok || !result?.success) {
+                return toast.error(result?.message || "Error");
+            }
+
+            await validateSession();
+            return toast.success(result?.message || "Success");
+        } finally {
+            setIsLoading({ value: false, provider: null });
+        }
+    };
 
     return (
         <>
             <Helmet>
-                <title>Login | CRMM</title>
+                <title>Login | {SITE_NAME_SHORT}</title>
                 <meta name="description" content="Log into your CRMM account" />
             </Helmet>
 
@@ -99,23 +128,27 @@ const LoginPage = () => {
 
                                 {formError && <FormErrorMessage text={formError} />}
 
-                                <Button type="submit" aria-label="Login" className="w-full h-9">
-                                    <LogInIcon className="w-[1.1rem] h-[1.1rem]" />
+                                <Button type="submit" aria-label="Login" className="w-full h-form-submit-btn" disabled={isLoading.value}>
+                                    {isLoading.provider === AuthProviders.CREDENTIAL ? (
+                                        <LoadingSpinner size="xs" />
+                                    ) : (
+                                        <LogInIcon className="w-[1.1rem] h-[1.1rem]" />
+                                    )}
                                     Login
                                 </Button>
                             </form>
                         </Form>
 
-                        <div className="w-full flex items-center gap-4">
-                            <hr className="bg-shallow-background border-none w-full h-[0.1rem] flex-1" />
-                            <p className="shrink-0 text-sm text-extra-muted-foreground">OR</p>
-                            <hr className="bg-shallow-background border-none w-full h-[0.1rem] flex-1" />
-                        </div>
+                        <HorizontalSeparator />
 
                         <div className="w-full flex flex-col items-start justify-start gap-2">
                             <p>Login using:</p>
                             <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <OAuthProvidersWidget actionIntent={AuthActionIntent.SIGN_IN} />
+                                <OAuthProvidersWidget
+                                    actionIntent={AuthActionIntent.SIGN_IN}
+                                    isLoading={isLoading}
+                                    setIsLoading={setIsLoading}
+                                />
                             </div>
                         </div>
 

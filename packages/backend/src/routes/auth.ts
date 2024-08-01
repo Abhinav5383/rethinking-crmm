@@ -1,13 +1,16 @@
 import { type ContextUserSession, ctxReqAuthSessionKey, ctxReqBodyKey } from "@/../types";
 import { getOAuthSignInUrl } from "@/controllers/auth/commons";
-import { logOutUserSession } from "@/controllers/auth/session";
+import { logOutUserSession, revokeSessionFromAccessCode } from "@/controllers/auth/session";
 import { oAuthSignInHandler } from "@/controllers/auth/signin";
+import credentialSignIn from "@/controllers/auth/signin/credential";
 import { oAuthSignUpHandler } from "@/controllers/auth/signup";
 import { LoginProtectedRoute } from "@/middleware/session";
 import { getCurrSessionFromCtx } from "@/utils";
-import getHttpCode, { defaultInvalidReqResponse, defaultServerErrorResponse } from "@/utils/http";
+import httpCode, { defaultInvalidReqResponse, defaultServerErrorResponse } from "@/utils/http";
 import { getAuthProviderFromString, getUserRoleFromString } from "@shared/lib/utils/convertors";
-import { AuthActionIntent, type LoggedInUserData } from "@shared/types";
+import { parseValueToSchema } from "@shared/schemas";
+import { LoginFormSchema } from "@shared/schemas/auth";
+import { AuthActionIntent, AuthProviders, type LoggedInUserData } from "@shared/types";
 import { type Context, Hono } from "hono";
 
 const authRouter = new Hono();
@@ -16,7 +19,7 @@ authRouter.get("/me", async (ctx: Context) => {
     try {
         const userSession = ctx.get(ctxReqAuthSessionKey) as ContextUserSession | undefined;
 
-        if (!userSession) return ctx.json({ message: "You're not logged in!" }, getHttpCode("unauthenticated"));
+        if (!userSession) return ctx.json({ message: "You're not logged in!" }, httpCode("unauthenticated"));
         const formattedObject: LoggedInUserData = {
             id: userSession.id,
             email: userSession.email,
@@ -30,7 +33,7 @@ authRouter.get("/me", async (ctx: Context) => {
             sessionToken: userSession.sessionToken,
         };
 
-        return ctx.json(formattedObject, getHttpCode("ok"));
+        return ctx.json(formattedObject, httpCode("ok"));
     } catch (error) {
         console.error(error);
         return defaultServerErrorResponse(ctx);
@@ -40,7 +43,7 @@ authRouter.get("/me", async (ctx: Context) => {
 authRouter.get(`/${AuthActionIntent.SIGN_IN}/get-oauth-url/:authProvider`, async (ctx: Context) => {
     try {
         const url = getOAuthSignInUrl(ctx, ctx.req.param("authProvider"), AuthActionIntent.SIGN_IN);
-        return ctx.json({ url }, getHttpCode("ok"));
+        return ctx.json({ url }, httpCode("ok"));
     } catch (error) {
         return defaultServerErrorResponse(ctx);
     }
@@ -49,8 +52,23 @@ authRouter.get(`/${AuthActionIntent.SIGN_IN}/get-oauth-url/:authProvider`, async
 authRouter.get(`/${AuthActionIntent.SIGN_UP}/get-oauth-url/:authProvider`, async (ctx: Context) => {
     try {
         const url = getOAuthSignInUrl(ctx, ctx.req.param("authProvider"), AuthActionIntent.SIGN_UP);
-        return ctx.json({ url }, getHttpCode("ok"));
+        return ctx.json({ url }, httpCode("ok"));
     } catch (error) {
+        return defaultServerErrorResponse(ctx);
+    }
+});
+
+authRouter.post(`/${AuthActionIntent.SIGN_IN}/${AuthProviders.CREDENTIAL}`, async (ctx: Context) => {
+    try {
+        const { data, error } = parseValueToSchema(LoginFormSchema, ctx.get(ctxReqBodyKey));
+        if (error || !data) {
+            return ctx.json({ success: false, message: error }, httpCode("bad_request"));
+        }
+
+        return await credentialSignIn(ctx, data);
+        // return await sendAccountPasswordChangeLink(ctx, data);
+    } catch (err) {
+        console.error(err);
         return defaultServerErrorResponse(ctx);
     }
 });
@@ -88,7 +106,7 @@ authRouter.get(`/callback/${AuthActionIntent.SIGN_UP}/:authProvider`, async (ctx
 authRouter.post("/session/logout", LoginProtectedRoute, async (ctx: Context) => {
     try {
         const authSession = getCurrSessionFromCtx(ctx);
-        if (!authSession?.id) return ctx.json({}); // This shouldn't happen because the LoginProtectedRoute middleware should filter non logged in requests
+        if (!authSession?.id) return ctx.json({}, httpCode("bad_request")); // This shouldn't happen because the LoginProtectedRoute middleware should filter non logged in requests
 
         const targetSessionId = ctx.get(ctxReqBodyKey)?.sessionId || null;
         const targetSessionIdInt = Number.parseInt(targetSessionId || "0");
@@ -99,6 +117,18 @@ authRouter.post("/session/logout", LoginProtectedRoute, async (ctx: Context) => 
         return await logOutUserSession(ctx, targetSessionIdInt);
     } catch (error) {
         console.error(error);
+        return defaultServerErrorResponse(ctx);
+    }
+});
+
+authRouter.post("/session/revoke-from-code", async (ctx: Context) => {
+    try {
+        const code = ctx.get(ctxReqBodyKey)?.code;
+        if (!code) return ctx.json({ success: false }, httpCode("bad_request"));
+
+        return await revokeSessionFromAccessCode(ctx, code);
+    } catch (err) {
+        console.error(err);
         return defaultServerErrorResponse(ctx);
     }
 });

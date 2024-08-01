@@ -1,14 +1,16 @@
 import { type ContextUserSession, ctxReqAuthSessionKey } from "@/../types";
 import prisma from "@/services/prisma";
-import { generateRandomString } from "@/utils";
+import { generateRandomString, generateRevokeSessionAccessCode } from "@/utils";
 import { sendNewSigninAlertEmail } from "@/utils/email";
-import { defaultServerErrorResponse } from "@/utils/http";
+import httpCode, { defaultServerErrorResponse } from "@/utils/http";
 import type { User, UserSession } from "@prisma/client";
 import { AUTHTOKEN_COOKIE_NAME, USER_SESSION_VALIDITY } from "@shared/config";
 import { UserSessionStates } from "@shared/types";
 import type { Context } from "hono";
 import { getCookie } from "hono/cookie";
 import { getUserDeviceDetails } from "./commons";
+import { addToUsedRateLimit } from "@/middleware/rate-limiter";
+import { CHARGE_FOR_SENDING_INVALID_DATA } from "@shared/config/rate-limit-charges";
 
 interface CreateNewSessionProps {
     userId: number;
@@ -32,6 +34,22 @@ export const createNewUserSession = async ({
     user,
 }: CreateNewSessionProps): Promise<UserSessionCookieData> => {
     const deviceDetails = await getUserDeviceDetails(ctx);
+
+    const newSession = await prisma.userSession.create({
+        data: {
+            userId: userId,
+            sessionToken: generateRandomString(30),
+            providerName: providerName,
+            dateExpires: new Date(Date.now() + USER_SESSION_VALIDITY),
+            status: UserSessionStates.ACTIVE,
+            revokeAccessCode: generateRevokeSessionAccessCode(userId),
+            os: `${deviceDetails.os.name} ${deviceDetails.os.version || ""}`,
+            browserName: deviceDetails.browserName || "",
+            ipAddress: deviceDetails.ipAddr || "",
+            city: deviceDetails.city || "",
+            country: deviceDetails.country || "",
+        },
+    });
 
     if (isFirstSignIn !== true) {
         const userSettings = await prisma.userSettings.findUnique({
@@ -67,27 +85,11 @@ export const createNewUserSession = async ({
                     browserName: deviceDetails.browserName || "",
                     osName: deviceDetails.os.name || "",
                     authProviderName: providerName || "",
+                    revokeAccessCode: newSession.revokeAccessCode,
                 });
             }
         }
     }
-
-    const newSession = await prisma.userSession.create({
-        data: {
-            userId: userId,
-            sessionToken: generateRandomString(30),
-            providerName: providerName,
-            dateExpires: new Date(Date.now() + USER_SESSION_VALIDITY),
-            status: UserSessionStates.ACTIVE,
-            os: `${deviceDetails.os.name} ${deviceDetails.os.version || ""}`,
-            browserName: deviceDetails.browserName || "",
-            ipAddress: deviceDetails.ipAddr || "",
-            city: deviceDetails.city || "",
-            country: deviceDetails.country || "",
-        },
-    });
-
-    // TODO: Send an alert on email if anything suspicious about the signin
 
     return {
         userId: userId,
@@ -177,4 +179,21 @@ export const logOutUserSession = async (ctx: Context, sessionId: number) => {
     } catch (error) {
         return defaultServerErrorResponse(ctx);
     }
+};
+
+export const revokeSessionFromAccessCode = async (ctx: Context, code: string) => {
+    let session: UserSession | null = null;
+    try {
+        session = await prisma.userSession.delete({
+            where: {
+                revokeAccessCode: code,
+            },
+        });
+    } catch (err) {}
+
+    if (!session?.id) {
+        await addToUsedRateLimit(ctx, CHARGE_FOR_SENDING_INVALID_DATA);
+        return ctx.json({ success: false, message: "Invalid access code" }, httpCode("bad_request"));
+    }
+    return ctx.json({ success: true, message: "Successfully revoked the session access" }, httpCode("ok"));
 };

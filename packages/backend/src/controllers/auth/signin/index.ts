@@ -1,7 +1,7 @@
 import type { AuthUserProfile } from "@/../types";
 import prisma from "@/services/prisma";
 import { setUserCookie } from "@/utils";
-import getHttpCode from "@/utils/http";
+import httpCode from "@/utils/http";
 import { AUTHTOKEN_COOKIE_NAME, SITE_NAME_SHORT } from "@shared/config";
 import { AuthProviders } from "@shared/types";
 import type { Context } from "hono";
@@ -45,7 +45,7 @@ export const oAuthSignInHandler = async (ctx: Context, authProvider: string, tok
                 success: false,
                 received: profileData,
             },
-            getHttpCode("bad_request"),
+            httpCode("bad_request"),
         );
     }
 
@@ -72,7 +72,7 @@ export const oAuthSignInHandler = async (ctx: Context, authProvider: string, tok
                 success: false,
                 message: `This ${Capitalize(profileData.providerName)} account (${profileData.email}) is not linked to any ${SITE_NAME_SHORT} user account. First link ${Capitalize(profileData.providerName)} auth provider to your user account to be able to signin using ${Capitalize(profileData.providerName)}`,
             },
-            getHttpCode("bad_request"),
+            httpCode("bad_request"),
         );
     }
 
@@ -82,7 +82,7 @@ export const oAuthSignInHandler = async (ctx: Context, authProvider: string, tok
                 success: false,
                 message: `This ${Capitalize(authProvider)} account is not linked to any user account nor does a user exist with the email address '${profileData.email}'. If you meant to create a new account, signup instead`,
             },
-            getHttpCode("bad_request"),
+            httpCode("bad_request"),
         );
     }
 
@@ -96,6 +96,6 @@ export const oAuthSignInHandler = async (ctx: Context, authProvider: string, tok
 
     return ctx.json(
         { success: true, message: `Successfuly logged in using ${profileData.providerName} as ${expectedAuthAccount.user.fullName}` },
-        getHttpCode("ok"),
+        httpCode("ok"),
     );
 };

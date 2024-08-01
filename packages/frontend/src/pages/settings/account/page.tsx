@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import useFetch from "@/src/hooks/fetch";
 import type { LinkedProvidersListData } from "@shared/types";
 import ManagePasswords from "./password/page";
+import { SITE_NAME_SHORT } from "@shared/config";
 
 const getLinkedAuthProviders = async (userId?: number) => {
     if (!userId) return null;
@@ -29,7 +30,7 @@ const AccountSettingsPage = () => {
     return (
         <>
             <Helmet>
-                <title>Account settings | CRMM</title>
+                <title>Account settings | {SITE_NAME_SHORT}</title>
                 <meta name="description" content="Your CRMM account settings" />
             </Helmet>
 

@@ -9,6 +9,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(({ className, type,
         <input
             type={type}
             className={cn("input_box_styles file:border-0 file:bg-transparent file:text-sm file:font-medium neumorphic_shadow", className)}
+            spellCheck={false}
             ref={ref}
             {...props}
         />

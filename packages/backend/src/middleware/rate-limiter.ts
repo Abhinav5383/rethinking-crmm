@@ -1,6 +1,6 @@
 import { getUserIpAddress } from "@/controllers/auth/commons";
 import redis from "@/services/redis";
-import getHttpCode from "@/utils/http";
+import httpCode from "@/utils/http";
 import type { Context, Next } from "hono";
 
 export const RateLimiterMiddleware = async (ctx: Context, next: Next) => {
@@ -20,10 +20,10 @@ export const RateLimiterMiddleware = async (ctx: Context, next: Next) => {
         ctx.res.headers.set("X-Ratelimit-Limit", `${rateLimits.global.limit}`);
         ctx.res.headers.set("X-Ratelimit-Reset", `${rateLimits.global.timeWindow_s}`);
 
-        if (count > rateLimits.global.limit) {
+        if (count >= rateLimits.global.limit) {
             return ctx.json(
-                { success: false, message: "Rate limit exceeded, please try again after 5 minutes" },
-                getHttpCode("too_many_requests"),
+                { success: false, message: `Rate limit exceeded, please try again after ${rateLimits.global.timeWindow_s / 60} minutes` },
+                httpCode("too_many_requests"),
             );
         }
     } catch (error) {

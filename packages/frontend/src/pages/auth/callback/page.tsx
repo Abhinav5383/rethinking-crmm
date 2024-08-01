@@ -2,8 +2,8 @@ import { FormErrorMessage } from "@/components/ui/form-message";
 import { AbsolutePositionedSpinner, LoadingSpinner } from "@/components/ui/spinner";
 import { getCookie } from "@/lib/utils";
 import useFetch from "@/src/hooks/fetch";
-import { csrfStateCookieName } from "@shared/config";
-import { GetAuthProviderFromString } from "@shared/lib/utils/convertors";
+import { CSRF_STATE_COOKIE_NAME, SITE_NAME_SHORT } from "@shared/config";
+import { getAuthProviderFromString } from "@shared/lib/utils/convertors";
 import { AuthActionIntent, AuthProviders } from "@shared/types";
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
@@ -39,16 +39,16 @@ const OAuthCallbackPage = () => {
     // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
     useEffect(() => {
         if (
-            urlCsrfState !== getCookie(csrfStateCookieName) ||
+            urlCsrfState !== getCookie(CSRF_STATE_COOKIE_NAME) ||
             !authProvider ||
             !code ||
             !urlCsrfState ||
-            GetAuthProviderFromString(authProvider) === AuthProviders.UNKNOWN
+            getAuthProviderFromString(authProvider) === AuthProviders.UNKNOWN
         ) {
             return navigate("/");
         }
 
-        submitCode(code, GetAuthProviderFromString(authProvider), actionIntent);
+        submitCode(code, getAuthProviderFromString(authProvider), actionIntent);
     }, [authProvider]);
 
     return (
@@ -56,7 +56,7 @@ const OAuthCallbackPage = () => {
             {errorMsg ? (
                 <>
                     <Helmet>
-                        <title>Error | CRMM</title>
+                        <title>Error | {SITE_NAME_SHORT}</title>
                         <meta name="description" content={errorMsg} />
                     </Helmet>
                     <div className="w-full max-w-md flex flex-col gap-4 items-center justify-center">
@@ -79,7 +79,7 @@ const OAuthCallbackPage = () => {
             ) : (
                 <>
                     <Helmet>
-                        <title>... | CRMM</title>
+                        <title>... | {SITE_NAME_SHORT}</title>
                         <meta name="description" content="Authenticating..." />
                     </Helmet>
                     <LoadingSpinner />

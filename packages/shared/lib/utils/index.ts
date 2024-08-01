@@ -33,3 +33,14 @@ export function createURLSafeSlug(slug: string) {
 
     return result;
 }
+
+export function formatUserName(str: string, additionalChars?: string) {
+    const allowedCharacters = `abcdefghijklmnopqrstuvwxyzABCDEFGHIJKMNOPQRSTUVWXYZ1234567890-_${additionalChars || ""}`;
+
+    let formattedString = "";
+    for (const char of str) {
+        if (allowedCharacters.includes(char)) formattedString += char;
+    }
+
+    return formattedString;
+}

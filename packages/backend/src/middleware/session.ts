@@ -4,7 +4,7 @@ import { deleteUserCookie, generateRandomString, getCurrSessionFromCtx, setUserC
 import type { Context, Next } from "hono";
 import { getCookie } from "hono/cookie";
 import { ctxReqAuthSessionKey } from "../../types";
-import getHttpCode, { defaultServerErrorResponse } from "@/utils/http";
+import httpCode, { defaultServerErrorResponse } from "@/utils/http";
 import { addToUsedRateLimit } from "./rate-limiter";
 import { PROTECTED_ROUTE_ACCESS_ATTEMPT_CHARGE } from "@shared/config/rate-limit-charges";
 
@@ -34,7 +34,7 @@ export const LoginProtectedRoute = async (ctx: Context, next: Next) => {
         const session = getCurrSessionFromCtx(ctx);
         if (!session?.id) {
             await addToUsedRateLimit(ctx, PROTECTED_ROUTE_ACCESS_ATTEMPT_CHARGE);
-            return ctx.json({ success: false, message: "You're not logged in" }, getHttpCode("unauthenticated"));
+            return ctx.json({ success: false, message: "You're not logged in" }, httpCode("unauthenticated"));
         }
 
         await next();

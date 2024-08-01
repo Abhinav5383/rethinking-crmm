@@ -2,7 +2,7 @@ import type { Context } from "hono";
 
 type httpCodeType = "ok" | "bad_request" | "unauthenticated" | "unauthorized" | "not_found" | "too_many_requests" | "server_error";
 
-const getHttpCode = (codeType: httpCodeType) => {
+const httpCode = (codeType: httpCodeType) => {
     switch (codeType) {
         case "ok":
             return 200;
@@ -23,7 +23,7 @@ const getHttpCode = (codeType: httpCodeType) => {
     }
 };
 
-export default getHttpCode;
+export default httpCode;
 
 export const defaultServerErrorResponse = (ctx: Context, message?: string) => {
     return ctx.json(
@@ -31,7 +31,7 @@ export const defaultServerErrorResponse = (ctx: Context, message?: string) => {
             message: message || "Internal server error",
             succcess: false,
         },
-        getHttpCode("server_error"),
+        httpCode("server_error"),
     );
 };
 
@@ -41,6 +41,6 @@ export const defaultInvalidReqResponse = (ctx: Context, message?: string) => {
             message: message || "Invalid request",
             succcess: false,
         },
-        getHttpCode("bad_request"),
+        httpCode("bad_request"),
     );
 };

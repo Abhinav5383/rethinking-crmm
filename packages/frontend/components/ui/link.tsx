@@ -6,9 +6,10 @@ type ButtonLinkProps = {
     children: React.ReactNode;
     className?: string;
     exactTailMatch?: boolean;
+    activityIndicator?: boolean;
 };
 
-export const ButtonLink = ({ url, children, className, exactTailMatch }: ButtonLinkProps) => {
+export const ButtonLink = ({ url, children, className, exactTailMatch, activityIndicator = true }: ButtonLinkProps) => {
     const location = useLocation();
 
     return (
@@ -16,7 +17,7 @@ export const ButtonLink = ({ url, children, className, exactTailMatch }: ButtonL
             to={url}
             className={cn(
                 "w-full h-10 px-4 py-2 font-medium flex items-center justify-start gap-2 whitespace-nowrap hover:bg-shallow-background transition-colors",
-                isCurrLinkActive(url, location.pathname, exactTailMatch) && "bg-shallow-background/75",
+                isCurrLinkActive(url, location.pathname, exactTailMatch) && activityIndicator && "bg-shallow-background/75",
                 className,
             )}
         >

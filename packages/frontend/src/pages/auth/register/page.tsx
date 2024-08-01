@@ -1,14 +1,21 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AuthActionIntent } from "@shared/types";
+import { SITE_NAME_SHORT } from "@shared/config";
+import { AuthActionIntent, type AuthProviders } from "@shared/types";
+import { useState } from "react";
 import { Helmet } from "react-helmet";
-import OAuthProvidersWidget from "../oauth-providers";
 import { Link } from "react-router-dom";
+import OAuthProvidersWidget from "../oauth-providers";
 
 const SignUpPage = () => {
+    const [isLoading, setIsLoading] = useState<{
+        value: boolean;
+        provider: AuthProviders | null;
+    }>({ value: false, provider: null });
+
     return (
         <>
             <Helmet>
-                <title>Signup | CRMM</title>
+                <title>Signup | {SITE_NAME_SHORT}</title>
                 <meta name="description" content="Signup for a CRMM account" />
             </Helmet>
 
@@ -21,7 +28,11 @@ const SignUpPage = () => {
                         <div className="w-full flex flex-col items-start justify-start gap-2">
                             <p>Signup using any of the auth providers:</p>
                             <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <OAuthProvidersWidget actionIntent={AuthActionIntent.SIGN_UP} />
+                                <OAuthProvidersWidget
+                                    actionIntent={AuthActionIntent.SIGN_UP}
+                                    isLoading={isLoading}
+                                    setIsLoading={setIsLoading}
+                                />
                             </div>
                         </div>
 

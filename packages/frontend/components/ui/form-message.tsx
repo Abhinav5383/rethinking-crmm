@@ -18,7 +18,7 @@ export const FormErrorMessage = ({ text, className, labelClassName, children }: 
 
 export const FormSuccessMessage = ({ text, className, labelClassName, children }: Props) => {
     return (
-        <div className={cn("w-full flex items-center justify-start px-4 py-2 rounded-lg bg-success-background/15", className)}>
+        <div className={cn("w-full flex items-center justify-start px-4 py-2 rounded bg-success-background/15", className)}>
             {children ? children : <p className={cn("leading-snug text-success-foreground", labelClassName)}>{text}</p>}
         </div>
     );

@@ -16,8 +16,8 @@ import { LoadingSpinner } from "@/components/ui/spinner";
 import useFetch from "@/src/hooks/fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { Capitalize } from "@shared/lib/utils";
-import { GetAuthProviderFromString } from "@shared/lib/utils/convertors";
+import { Capitalize, formatUserName } from "@shared/lib/utils";
+import { getAuthProviderFromString } from "@shared/lib/utils/convertors";
 import { profileUpdateFormSchema } from "@shared/schemas/settings";
 import { AuthProviders, type LinkedProvidersListData, type LoggedInUserData } from "@shared/types";
 import { Edit2, SaveIcon } from "lucide-react";
@@ -40,7 +40,7 @@ const EditProfileDialog = ({
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const initialFormValues = {
-        avatarImageProvider: AuthProviders.GITHUB,
+        avatarImageProvider: getAuthProviderFromString(session?.avatarProvider || ""),
         userName: session.userName,
         fullName: session.fullName,
     };
@@ -68,6 +68,8 @@ const EditProfileDialog = ({
         setIsLoading(false);
         setIsDialogOpen(false);
     };
+
+    // console.log({ linkedAuthProviders, session, formattedProviderName: getAuthProviderFromString(session.avatarProvider) });
 
     return (
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -108,7 +110,7 @@ const EditProfileDialog = ({
                                             {linkedAuthProviders
                                                 ?.map((provider) => ({
                                                     ...provider,
-                                                    providerName: GetAuthProviderFromString(provider.providerName),
+                                                    providerName: getAuthProviderFromString(provider.providerName),
                                                 }))
                                                 .map((provider) => {
                                                     return (
@@ -134,7 +136,15 @@ const EditProfileDialog = ({
                                             <FormMessage />
                                         </FormLabel>
                                         <FormControl>
-                                            <Input {...field} type="text" spellCheck={false} />
+                                            <Input
+                                                {...field}
+                                                type="text"
+                                                spellCheck={false}
+                                                onChange={(e) => {
+                                                    e.target.value = formatUserName(e.target.value);
+                                                    field.onChange(e);
+                                                }}
+                                            />
                                         </FormControl>
                                     </FormItem>
                                 </>
@@ -151,7 +161,15 @@ const EditProfileDialog = ({
                                             <FormMessage />
                                         </FormLabel>
                                         <FormControl>
-                                            <Input {...field} type="text" spellCheck={false} />
+                                            <Input
+                                                {...field}
+                                                type="text"
+                                                spellCheck={false}
+                                                onChange={(e) => {
+                                                    e.target.value = formatUserName(e.target.value, " ");
+                                                    field.onChange(e);
+                                                }}
+                                            />
                                         </FormControl>
                                     </FormItem>
                                 </>

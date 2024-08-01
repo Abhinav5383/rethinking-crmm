@@ -71,9 +71,9 @@
         --unit-height: 3.5rem;
     }
 }
-
 /* Subtle grid bg for the body */
-/* .hero_section_grid_bg {
+
+.hero_section_grid_bg {
     --line-width: 0.1rem;
     --bg-size: 2rem;
     --line-color: hsla(var(--shallower-background), 0.2);
@@ -91,4 +91,4 @@
 .dark .hero_section_grid_bg {
     --line-color: hsla(var(--shallow-background), 0.125);
     --transition-from-bg: var(--background);
-} */
+}

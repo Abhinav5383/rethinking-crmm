@@ -2,7 +2,7 @@ import type { Context } from "hono";
 import { deleteCookie, setCookie } from "hono/cookie";
 import type { CookieOptions } from "hono/utils/cookie";
 import { ctxReqAuthSessionKey } from "../../types";
-import type { LoggedInUserData } from "@shared/types";
+import type { ConfirmationActionTypes, LoggedInUserData } from "@shared/types";
 import { PASSWORD_HASH_SALT_ROUNDS } from "@shared/config";
 
 const shuffleCharacters = (str: string) => {
@@ -58,4 +58,12 @@ export const matchPassword = async (password: string, hash: string) => {
     } catch (error) {
         return false;
     }
+};
+
+export const generateConfirmationEmailCode = (actionType: ConfirmationActionTypes, userId: number, length = 24) => {
+    return `${actionType}-${userId}-${generateRandomString(length)}`;
+};
+
+export const generateRevokeSessionAccessCode = (userId: number, length = 24) => {
+    return `revoke-session-${userId}-${generateRandomString(length)}`;
 };

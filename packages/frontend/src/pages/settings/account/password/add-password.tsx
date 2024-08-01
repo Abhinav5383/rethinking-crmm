@@ -9,17 +9,24 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { Form, FormItem, FormLabel, FormField, FormControl, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { LoadingSpinner } from "@/components/ui/spinner";
+import useFetch from "@/src/hooks/fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { addPasswordFormSchema } from "@shared/schemas/settings";
+import { setNewPasswordFormSchema } from "@shared/schemas/settings";
 import { KeyRoundIcon, PlusIcon } from "lucide-react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import type { z } from "zod";
 
 const AddPasswordForm = () => {
-    const form = useForm<z.infer<typeof addPasswordFormSchema>>({
-        resolver: zodResolver(addPasswordFormSchema),
+    const [isLoading, setIsLoading] = useState(false);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+    const form = useForm<z.infer<typeof setNewPasswordFormSchema>>({
+        resolver: zodResolver(setNewPasswordFormSchema),
         defaultValues: {
             newPassword: "",
             confirmNewPassword: "",
@@ -27,13 +34,33 @@ const AddPasswordForm = () => {
     });
 
     form.watch();
+    const isFormSubmittable =
+        !!form.getValues().confirmNewPassword &&
+        !!form.getValues()?.newPassword &&
+        form.getValues().newPassword === form.getValues().confirmNewPassword;
 
-    const addNewPassword = (values: z.infer<typeof addPasswordFormSchema>) => {
-        console.log(values);
+    const addNewPassword = async (values: z.infer<typeof setNewPasswordFormSchema>) => {
+        if (isLoading || !isFormSubmittable) return;
+        setIsLoading(true);
+
+        const response = await useFetch("/api/user/add-new-password", {
+            method: "POST",
+            body: JSON.stringify(values),
+        });
+        setIsLoading(false);
+        const data = await response.json();
+
+        if (!response.ok || data?.success !== true) {
+            setIsLoading(false);
+            return toast.error(data?.message || "");
+        }
+        toast.success(data?.message || "");
+        setIsDialogOpen(false);
+        form.reset();
     };
 
     return (
-        <Dialog>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
                 <Button variant={"secondary"}>
                     <KeyRoundIcon className="w-btn-icon h-btn-icon" />
@@ -86,14 +113,8 @@ const AddPasswordForm = () => {
                             <DialogClose asChild>
                                 <CancelButton />
                             </DialogClose>
-                            <Button
-                                disabled={
-                                    !form.getValues().confirmNewPassword ||
-                                    !form.getValues()?.newPassword ||
-                                    form.getValues().newPassword !== form.getValues().confirmNewPassword
-                                }
-                            >
-                                <PlusIcon className="w-btn-icon-lg h-btn-icon-lg" />
+                            <Button disabled={!isFormSubmittable || isLoading}>
+                                {isLoading ? <LoadingSpinner size="xs" /> : <PlusIcon className="w-btn-icon-lg h-btn-icon-lg" />}
                                 Add password
                             </Button>
                         </DialogFooter>

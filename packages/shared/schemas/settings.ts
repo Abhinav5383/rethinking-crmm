@@ -1,9 +1,11 @@
 import { z } from "zod";
 import { AuthProviders } from "../types";
 import {
+    MAX_EMAIL_LENGTH,
     MAX_NAME_LENGTH,
     MAX_PASSWORD_LENGTH,
     MAX_USERNAME_LENGTH,
+    MIN_EMAIL_LENGTH,
     MIN_NAME_LENGTH,
     MIN_PASSWORD_LENGTH,
     MIN_USERNAME_LENGTH,
@@ -21,7 +23,7 @@ export const profileUpdateFormSchema = z.object({
         .max(MAX_NAME_LENGTH, `Your name can only have a maximum of ${MAX_NAME_LENGTH} characters`),
 });
 
-export const addPasswordFormSchema = z.object({
+export const setNewPasswordFormSchema = z.object({
     newPassword: z
         .string()
         .min(MIN_PASSWORD_LENGTH, `Your password must be atleast ${MIN_PASSWORD_LENGTH} characters`)
@@ -31,4 +33,12 @@ export const addPasswordFormSchema = z.object({
         .string()
         .min(MIN_PASSWORD_LENGTH, `Your password must be atleast ${MIN_PASSWORD_LENGTH} characters`)
         .max(MAX_PASSWORD_LENGTH, `Your password can only have a maximum of ${MAX_PASSWORD_LENGTH} characters`),
+});
+
+export const removeAccountPasswordFormSchema = z.object({
+    password: z.string().min(MIN_PASSWORD_LENGTH).max(MAX_PASSWORD_LENGTH),
+});
+
+export const sendAccoutPasswordChangeLinkFormSchema = z.object({
+    email: z.string().min(MIN_EMAIL_LENGTH).max(MAX_EMAIL_LENGTH),
 });

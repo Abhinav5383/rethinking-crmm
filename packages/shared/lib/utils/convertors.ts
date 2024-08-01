@@ -1,6 +1,6 @@
-import { AuthProviders, GlobalUserRoles } from "../../types";
+import { AuthProviders, ConfirmationActionTypes, GlobalUserRoles } from "../../types";
 
-export const GetUserRoleFromString = (roleName: string) => {
+export const getUserRoleFromString = (roleName: string) => {
     switch (roleName) {
         case GlobalUserRoles.ADMIN:
             return GlobalUserRoles.ADMIN;
@@ -15,7 +15,7 @@ export const GetUserRoleFromString = (roleName: string) => {
     }
 };
 
-export const GetAuthProviderFromString = (providerName: string) => {
+export const getAuthProviderFromString = (providerName: string) => {
     switch (providerName) {
         case AuthProviders.GITHUB:
             return AuthProviders.GITHUB;
@@ -29,5 +29,18 @@ export const GetAuthProviderFromString = (providerName: string) => {
             return AuthProviders.CREDENTIAL;
         default:
             return AuthProviders.UNKNOWN;
+    }
+};
+
+export const getConfirmActionTypeFromStringName = (type: string) => {
+    switch (type) {
+        case ConfirmationActionTypes.CONFIRM_NEW_PASSWORD:
+            return ConfirmationActionTypes.CONFIRM_NEW_PASSWORD;
+        case ConfirmationActionTypes.CHANGE_ACCOUNT_PASSWORD:
+            return ConfirmationActionTypes.CHANGE_ACCOUNT_PASSWORD;
+        case ConfirmationActionTypes.DELETE_USER_ACCOUNT:
+            return ConfirmationActionTypes.DELETE_USER_ACCOUNT;
+        default:
+            return null;
     }
 };

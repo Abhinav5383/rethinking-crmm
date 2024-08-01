@@ -54,3 +54,9 @@ export interface LinkedProvidersListData {
     providerAccountEmail: string;
     avatarImageUrl?: string | null;
 }
+
+export enum ConfirmationActionTypes {
+    CONFIRM_NEW_PASSWORD = "confirm-new-password",
+    CHANGE_ACCOUNT_PASSWORD = "change-account-password",
+    DELETE_USER_ACCOUNT = "delete-user-account"
+}

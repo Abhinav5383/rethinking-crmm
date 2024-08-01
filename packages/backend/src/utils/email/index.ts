@@ -1,7 +1,7 @@
 import { sendEmail } from "@/services/email";
 import { monthNames } from "@shared/lib/utils/date-time";
-import { confirmNewPasswordEmailTemplate, newSignInAlertEmailTemplate } from "./templates";
-import { CONFIRM_NEW_PASSWORD_EMAIL_VALIDITY_ms } from "@shared/config";
+import { changeAccountPasswordEmailTemplate, confirmNewPasswordEmailTemplate, newSignInAlertEmailTemplate } from "./templates";
+import { CHANGE_ACCOUNT_PASSWORD_EMAIL_VALIDITY_ms, CONFIRM_NEW_PASSWORD_EMAIL_VALIDITY_ms } from "@shared/config";
 
 const frontendUrl = process.env.FRONTEND_URL;
 
@@ -14,6 +14,7 @@ export const sendNewSigninAlertEmail = async ({
     browserName,
     osName,
     authProviderName,
+    revokeAccessCode,
 }: {
     fullName: string;
     receiverEmail: string;
@@ -23,6 +24,7 @@ export const sendNewSigninAlertEmail = async ({
     browserName: string;
     osName: string;
     authProviderName: string;
+    revokeAccessCode: string;
 }) => {
     try {
         const currTime = new Date();
@@ -37,6 +39,7 @@ export const sendNewSigninAlertEmail = async ({
             authProviderName: authProviderName,
             signInLocation: `${region} - ${country}`,
             formattedUtcTimeStamp: `${monthNames[currTime.getUTCMonth()]} ${currTime.getUTCDate()}, ${currTime.getUTCFullYear()} at ${currTime.getUTCHours()}:${currTime.getUTCMinutes()}  (UTC Time)`,
+            revokeSessionLink: `${frontendUrl}/auth/revoke-session?code=${revokeAccessCode}`,
         });
 
         await sendEmail({
@@ -71,6 +74,37 @@ export const sendConfirmNewPasswordEmail = async ({
             siteUrl: frontendUrl || "",
             expiryDuration: CONFIRM_NEW_PASSWORD_EMAIL_VALIDITY_ms,
             confirmationPageUrl: `${frontendUrl}/auth/confirm-action?code=${encodeURIComponent(code)}`,
+        });
+
+        await sendEmail({
+            receiver: receiverEmail,
+            subject: emailTemplate.subject,
+            template: emailTemplate.emailHtml,
+            text: emailTemplate.text,
+        });
+
+        return { success: true, message: "Email send successfully" };
+    } catch (err) {
+        console.error(err);
+        return { success: false, message: "Error sending the email" };
+    }
+};
+
+export const sendChangePasswordEmail = async ({
+    fullName,
+    code,
+    receiverEmail,
+}: {
+    fullName: string;
+    code: string;
+    receiverEmail: string;
+}) => {
+    try {
+        const emailTemplate = changeAccountPasswordEmailTemplate({
+            fullName,
+            siteUrl: frontendUrl || "",
+            expiryDuration: CHANGE_ACCOUNT_PASSWORD_EMAIL_VALIDITY_ms,
+            changePasswordPageUrl: `${frontendUrl}/auth/confirm-action?code=${encodeURIComponent(code)}`,
         });
 
         await sendEmail({

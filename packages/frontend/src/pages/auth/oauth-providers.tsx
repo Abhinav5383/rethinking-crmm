@@ -1,9 +1,10 @@
-import { DiscordIcon, GoogleIcon, GithubIcon, GitlabIcon } from "@/components/icons";
+import { DiscordIcon, GithubIcon, GitlabIcon, GoogleIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
-import { AuthActionIntent, AuthProviders } from "@shared/types";
-import React, { useState } from "react";
-import { AbsolutePositionedSpinner, LoadingSpinner } from "@/components/ui/spinner";
+import { LoadingSpinner } from "@/components/ui/spinner";
 import useFetch from "@/src/hooks/fetch";
+import { AuthActionIntent, AuthProviders } from "@shared/types";
+import React from "react";
+import { toast } from "sonner";
 
 export const ConfiguredAuthProviders = [AuthProviders.GITHUB, AuthProviders.DISCORD, AuthProviders.GOOGLE, AuthProviders.GITLAB];
 
@@ -45,29 +46,42 @@ const OAuthProvidersWidget = ({
         }>
     >;
 }) => {
+    const redirectToOauthPage = async (provider: AuthProviders) => {
+        try {
+            if (isLoading.value === true) return;
+            setIsLoading({ value: true, provider: provider });
+
+            const response = await useFetch(`/api/auth/${actionIntent}/get-oauth-url/${provider}`);
+            const result = await response.json();
+
+            if (!response.ok || !result?.url) {
+                setIsLoading({ value: false, provider: null });
+                return toast.error(result?.message || "Error");
+            }
+
+            toast.success("Redirecting...");
+            window.location.href = result.url;
+        } catch (err) {
+            console.error(err);
+            setIsLoading({ value: false, provider: null });
+        }
+    };
+
     return (
         <>
             {authProvidersList?.map((provider) => {
                 return (
                     <React.Fragment key={provider.name}>
                         <Button
-                            onClick={async () => {
-                                if (isLoading.value === true) return;
-
-                                setIsLoading({ value: true, provider: provider.name });
-                                const signinUrl = await getOAuthUrl(provider.name, actionIntent);
-                                window.location.href = signinUrl;
-                            }}
+                            onClick={() => redirectToOauthPage(provider.name)}
                             aria-label={`Continue using ${provider.name}`}
                             className="w-full font-medium capitalize"
                             variant="secondary"
                             disabled={isLoading.value || disabled}
                         >
-                            {isLoading.provider === provider.name ? (
-                                <LoadingSpinner size="xs" />
-                            ) : (
-                                <i className="min-w-6 flex items-center justify-start">{provider.icon}</i>
-                            )}
+                            <i className="min-w-6 flex items-center justify-start">
+                                {isLoading.provider === provider.name ? <LoadingSpinner size="xs" /> : provider.icon}
+                            </i>
                             {provider.name}
                         </Button>
                     </React.Fragment>
@@ -78,8 +92,3 @@ const OAuthProvidersWidget = ({
 };
 
 export default OAuthProvidersWidget;
-
-export const getOAuthUrl = async (provider: AuthProviders, actionIntent: AuthActionIntent) => {
-    const response = await useFetch(`/api/auth/${actionIntent}/get-oauth-url/${provider}`);
-    return (await response.json())?.url || "";
-};

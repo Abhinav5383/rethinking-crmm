@@ -34,11 +34,11 @@ const HomePage = () => {
             <main className="w-full">
                 <section className="full_page w-full flex flex-col items-center justify-center">
                     <BrandIcon size="16rem" className="text-accent-foreground" />
-                    <div className="w-full flex flex-col items-center justify-center">
-                        <h1 className="text-2xl lg:text-4xl font-medium text-foreground text-center">Cosmic Reach Mod Manager</h1>
+                    <div className="w-full flex flex-col items-center justify-center gap-1">
+                        <h1 className="text-4xl lg:text-6xl font-medium text-foreground text-center">Cosmic Reach Mod Manager</h1>
 
-                        <h2 className="h-10 lg:h-14 mb-2 overflow-hidden">
-                            <span className="hero_section_showcase flex flex-col items-center justify-center">
+                        <h2 className="h-12 lg:h-[4.5rem] mb-1 overflow-hidden">
+                            <span className="hero_section_showcase flex flex-col items-center justify-center [--unit-height:_3rem] lg:[--unit-height:_4.5rem]">
                                 {showcaseItems?.map((item, index) => {
                                     return (
                                         <strong
@@ -46,7 +46,7 @@ const HomePage = () => {
                                                 // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                                                 index
                                             }`}
-                                            className="flex font-bold items-center justify-center h-10 lg:h-14 text-2xl lg:text-4xl bg-clip-text bg-accent-background text-transparent bg-cover bg-gradient-to-b from-rose-200 to-accent-background via-accent-background leading-loose"
+                                            className="flex font-bold items-center justify-center h-12 lg:h-[4.5rem] text-4xl lg:text-6xl bg-clip-text bg-accent-background text-transparent bg-cover bg-gradient-to-b from-rose-200 to-accent-background via-accent-background leading-loose"
                                             // @ts-ignore
                                             style={{ "--index": index + 1 }}
                                         >
@@ -57,8 +57,8 @@ const HomePage = () => {
                             </span>
                         </h2>
 
-                        <div className="flex flex-col items-center justify-center">
-                            <h2 className="w-full text-center flex flex-wrap items-center justify-center text-lg">
+                        <div className="w-full max-w-xl flex flex-col items-center justify-center">
+                            <h2 className="w-full text-center text-lg lg:text-xl">
                                 The best place for your&nbsp;
                                 <a
                                     href="https://finalforeach.itch.io/cosmic-reach"
@@ -69,9 +69,8 @@ const HomePage = () => {
                                 >
                                     Cosmic Reach
                                 </a>
-                                &nbsp;mods.
-                            </h2>
-                            <h2 className="text-lg flex text-center text-foreground-muted">
+                                &nbsp;mods. {/* </h2> */}
+                                {/* <h2 className="text-lg lg:text-xl flex text-center text-foreground-muted"> */}
                                 Discover, play, and create content, all in one spot.
                             </h2>
                         </div>

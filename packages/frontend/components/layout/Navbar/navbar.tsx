@@ -1,14 +1,15 @@
+import { BrandIcon } from "@/components/icons";
+import ThemeSwitch from "@/components/ui/theme-switcher";
 import { cn } from "@/lib/utils";
+import "@/src/globals.css";
+import { ProjectTypes } from "@shared/config/project";
+import { CapitalizeAndFormatString, createURLSafeSlug } from "@shared/lib/utils";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { Link, NavLink as RouterNavLink } from "react-router-dom";
-import { BrandIcon } from "@/components/icons";
-import { ProjectTypes } from "@shared/config/project";
-import { CapitalizeAndFormatString, createURLSafeSlug } from "@shared/lib/utils";
-import "@/src/globals.css";
-import "./styles.css";
-import ThemeSwitch from "@/components/ui/theme-switcher";
+import { HamMenu, MobileNav } from "./mobile-nav";
 import NavButton from "./nav-button";
+import "./styles.css";
 
 const Navbar = () => {
     const [isNavMenuOpen, setIsNavMenuOpen] = useState<boolean>(false);
@@ -34,7 +35,12 @@ const Navbar = () => {
 
     return (
         <header className="w-full flex items-start justify-start relative">
-            <div className="nav_bg w-full flex items-center justify-center z-50">
+            <div
+                className={cn(
+                    "nav_bg w-full flex items-center justify-center z-50 bg-transparent transition-colors duration-0 delay-300",
+                    isNavMenuOpen && "bg-background delay-0",
+                )}
+            >
                 <nav className="container flex flex-wrap items-center justify-between py-3 px-4 sm:px-8">
                     <div className="flex items-center justify-center gap-8">
                         <Link
@@ -72,18 +78,16 @@ const Navbar = () => {
                     <div className="flex items-center gap-4">
                         <ThemeSwitch />
                         <div className="hidden lg:flex">
-                            <NavButton />
+                            <NavButton toggleNavMenu={toggleNavMenu} />
                         </div>
                         <div className="flex lg:hidden align-center justify-center">
-                            {/* <HamMenu isNavMenuOpen={isNavMenuOpen} toggleNavMenu={toggleNavMenu} /> */}
+                            <HamMenu isNavMenuOpen={isNavMenuOpen} toggleNavMenu={toggleNavMenu} />
                         </div>
                     </div>
                 </nav>
             </div>
 
-            {/* <MobileNav isNavMenuOpen={isNavMenuOpen} NavMenuLinks={NavLinks} toggleNavMenu={toggleNavMenu}>
-                <MenuProfileLinks isNavMenuOpen={isNavMenuOpen} toggleNavMenu={toggleNavMenu} />
-            </MobileNav> */}
+            <MobileNav isNavMenuOpen={isNavMenuOpen} NavLinks={NavLinks} toggleNavMenu={toggleNavMenu} />
         </header>
     );
 };

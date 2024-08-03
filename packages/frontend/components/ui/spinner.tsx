@@ -61,7 +61,15 @@ export const WanderingCubesSpinner = () => {
 
 export const FullPageSpinner = ({ size, className }: { size?: LoaderSizes; className?: string }) => {
     return (
-        <div className={cn("w-full h-full min-h-[100vh] flex items-center justify-center", className)}>
+        <div className={cn("w-full full_page flex items-center justify-center", className)}>
+            <LoadingSpinner size={size} />
+        </div>
+    );
+};
+
+export const FullWidthSpinner = ({ size, className }: { size?: LoaderSizes; className?: string }) => {
+    return (
+        <div className={cn("w-full flex items-center justify-center py-12", className)}>
             <LoadingSpinner size={size} />
         </div>
     );

@@ -121,6 +121,11 @@ body * ::-webkit-scrollbar-track {
     background-color: hsla(var(--card-background));
 }
 
+body.navmenu-open,
+body.no-scrollbar {
+    overflow: hidden;
+}
+
 @layer components{
     .neumorphic_shadow:not(.no_neumorphic_shadow) {
         box-shadow: inset 0px -1px 2px hsla(var(--tint-hue), var(--bg-saturation), 5%, var(--shadow-color-alpha, 0.15)),
@@ -167,6 +172,7 @@ body * ::-webkit-scrollbar-track {
     }
 
     a, button {
+        transition: font-size 150ms ease;
         @apply focus:outline-none focus-visible:outline-none focus-visible:keyboard_focus_ring rounded;
     }
 }

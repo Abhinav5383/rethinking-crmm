@@ -2,11 +2,12 @@ import { SuspenseFallback } from "@/components/ui/spinner";
 import "@/src/globals.css";
 import { lazy, Suspense } from "react";
 import ReactDOM from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
 import RootLayout from "@/src/pages/layout";
 import { RedirectIfLoggedIn, RedirectIfNotLoggedIn } from "./pages/auth/guards";
 import NotFoundPage from "./pages/not-found";
 import ContextProviders from "./providers";
+import ErrorView from "./pages/error-page";
 
 const HomePage = lazy(() => import("@/src/pages/page"));
 const LoginPage = lazy(() => import("@/src/pages/auth/login/page"));
@@ -22,129 +23,140 @@ const RevokeSessionPage = lazy(() => import("@/src/pages/auth/revoke-session"));
 
 const router = createBrowserRouter([
     {
-        path: "auth/callback/:authProvider",
-        element: (
+        path: "",
+        element: <Outlet />,
+        errorElement: (
             <Suspense fallback={<SuspenseFallback />}>
-                <ContextProviders>
-                    <OAuthCallbackPage />
-                </ContextProviders>
+                <ErrorView />
             </Suspense>
         ),
-    },
-    {
-        path: "auth/revoke-session",
-        element: (
-            <Suspense fallback={<SuspenseFallback />}>
-                <ContextProviders>
-                    <RevokeSessionPage />
-                </ContextProviders>
-            </Suspense>
-        ),
-    },
-    {
-        path: "auth/confirm-action",
-        element: (
-            <Suspense fallback={<SuspenseFallback />}>
-                <ContextProviders>
-                    <ConfirmActionPage />
-                </ContextProviders>
-            </Suspense>
-        ),
-    },
-    {
-        path: "/",
-        element: <RootLayout />,
         children: [
             {
-                path: "",
+                path: "auth/callback/:authProvider",
                 element: (
                     <Suspense fallback={<SuspenseFallback />}>
-                        <HomePage />
+                        <ContextProviders>
+                            <OAuthCallbackPage />
+                        </ContextProviders>
                     </Suspense>
                 ),
             },
             {
-                path: "login",
+                path: "auth/revoke-session",
                 element: (
-                    <>
-                        <RedirectIfLoggedIn redirectTo="/dashboard" />
-                        <Suspense fallback={<SuspenseFallback />}>
-                            <LoginPage />
-                        </Suspense>
-                    </>
+                    <Suspense fallback={<SuspenseFallback />}>
+                        <ContextProviders>
+                            <RevokeSessionPage />
+                        </ContextProviders>
+                    </Suspense>
                 ),
             },
             {
-                path: "signup",
+                path: "auth/confirm-action",
                 element: (
-                    <>
-                        <RedirectIfLoggedIn redirectTo="/dashboard" />
-                        <Suspense fallback={<SuspenseFallback />}>
-                            <SignUpPage />
-                        </Suspense>
-                    </>
+                    <Suspense fallback={<SuspenseFallback />}>
+                        <ContextProviders>
+                            <ConfirmActionPage />
+                        </ContextProviders>
+                    </Suspense>
                 ),
             },
             {
-                path: "change-password",
-                element: (
-                    <>
-                        <Suspense fallback={<SuspenseFallback />}>
-                            <ChangePasswordPage />
-                        </Suspense>
-                    </>
-                ),
-            },
-            {
-                path: "settings",
-                element: (
-                    <>
-                        <RedirectIfNotLoggedIn redirectTo="/login" />
-                        <Suspense fallback={<SuspenseFallback />}>
-                            <SettingsPageLayout />
-                        </Suspense>
-                    </>
-                ),
+                path: "/",
+                element: <RootLayout />,
                 children: [
                     {
                         path: "",
                         element: (
+                            <Suspense fallback={<SuspenseFallback />}>
+                                <HomePage />
+                            </Suspense>
+                        ),
+                    },
+                    {
+                        path: "login",
+                        element: (
                             <>
+                                <RedirectIfLoggedIn redirectTo="/dashboard" />
                                 <Suspense fallback={<SuspenseFallback />}>
-                                    <SettingsPage />
+                                    <LoginPage />
                                 </Suspense>
                             </>
                         ),
                     },
                     {
-                        path: "account",
+                        path: "signup",
                         element: (
                             <>
+                                <RedirectIfLoggedIn redirectTo="/dashboard" />
                                 <Suspense fallback={<SuspenseFallback />}>
-                                    <AccountSettingsPage />
+                                    <SignUpPage />
                                 </Suspense>
                             </>
                         ),
                     },
                     {
-                        path: "sessions",
+                        path: "change-password",
                         element: (
                             <>
                                 <Suspense fallback={<SuspenseFallback />}>
-                                    <SessionsPage />
+                                    <ChangePasswordPage />
                                 </Suspense>
                             </>
+                        ),
+                    },
+                    {
+                        path: "settings",
+                        element: (
+                            <>
+                                <RedirectIfNotLoggedIn redirectTo="/login" />
+                                <Suspense fallback={<SuspenseFallback />}>
+                                    <SettingsPageLayout />
+                                </Suspense>
+                            </>
+                        ),
+                        children: [
+                            {
+                                path: "",
+                                element: (
+                                    <>
+                                        <Suspense fallback={<SuspenseFallback />}>
+                                            <SettingsPage />
+                                        </Suspense>
+                                    </>
+                                ),
+                            },
+                            {
+                                path: "account",
+                                element: (
+                                    <>
+                                        <Suspense fallback={<SuspenseFallback />}>
+                                            <AccountSettingsPage />
+                                        </Suspense>
+                                    </>
+                                ),
+                            },
+                            {
+                                path: "sessions",
+                                element: (
+                                    <>
+                                        <Suspense fallback={<SuspenseFallback />}>
+                                            <SessionsPage />
+                                        </Suspense>
+                                    </>
+                                ),
+                            },
+                        ],
+                    },
+                    {
+                        path: "*",
+                        element: (
+                            <Suspense fallback={<SuspenseFallback />}>
+                                <NotFoundPage />
+                            </Suspense>
                         ),
                     },
                 ],
-            },
-            {
-                path: "*",
-                element: (
-                    <Suspense fallback={<SuspenseFallback />}>
-                        <NotFoundPage />
-                    </Suspense>
-                ),
             },
         ],
     },

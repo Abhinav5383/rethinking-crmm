@@ -1,5 +1,5 @@
 import { FormErrorMessage } from "@/components/ui/form-message";
-import { AbsolutePositionedSpinner, LoadingSpinner } from "@/components/ui/spinner";
+import { LoadingSpinner } from "@/components/ui/spinner";
 import { getCookie } from "@/lib/utils";
 import useFetch from "@/src/hooks/fetch";
 import { CSRF_STATE_COOKIE_NAME, SITE_NAME_SHORT } from "@shared/config";
@@ -16,15 +16,23 @@ const OAuthCallbackPage = () => {
     const navigate = useNavigate();
 
     const submitCode = async (code: string, provider: AuthProviders, actionIntent: AuthActionIntent) => {
-        const response = await useFetch(`/api/auth/callback/${actionIntent}/${provider}?code=${code}`);
-
-        if (!response?.ok) {
+        let redirectUrl = "/dashboard";
+        try {
+            const response = await useFetch(`/api/auth/callback/${actionIntent}/${provider}?code=${code}`);
             const data = await response.json();
-            setErrorMsg(data?.message || "Something went wrong!");
-            return;
-        }
 
-        navigate("/dashboard");
+            redirectUrl = data?.redirect || redirectUrl;
+            redirectUrl += `?announce=${encodeURIComponent(data?.message)}`;
+
+            if (!response?.ok) {
+                setErrorMsg(data?.message || "Something went wrong!");
+                return;
+            }
+            navigate(redirectUrl);
+        } catch (error) {
+            console.error(error);
+            setErrorMsg(`${error}` || "Something went wrong!");
+        }
     };
 
     const urlCsrfState = searchParams.get("state");

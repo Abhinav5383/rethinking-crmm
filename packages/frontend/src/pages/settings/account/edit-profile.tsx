@@ -19,7 +19,7 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Capitalize, formatUserName } from "@shared/lib/utils";
 import { getAuthProviderFromString } from "@shared/lib/utils/convertors";
 import { profileUpdateFormSchema } from "@shared/schemas/settings";
-import { AuthProviders, type LinkedProvidersListData, type LoggedInUserData } from "@shared/types";
+import type { LinkedProvidersListData, LoggedInUserData } from "@shared/types";
 import { Edit2, SaveIcon } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -68,8 +68,6 @@ const EditProfileDialog = ({
         setIsLoading(false);
         setIsDialogOpen(false);
     };
-
-    // console.log({ linkedAuthProviders, session, formattedProviderName: getAuthProviderFromString(session.avatarProvider) });
 
     return (
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

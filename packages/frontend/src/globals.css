@@ -49,7 +49,8 @@
     --success-foreground-light: 158, 94%, 24%;
 }
 
-html, html body {
+html,
+html body {
     color: hsla(var(--foreground));
     background-color: hsla(var(--background));
     font-size: var(--font-base);
@@ -58,7 +59,8 @@ html, html body {
     width: 100%;
 }
 
-.dark, .dark body {
+.dark,
+.dark body {
     --foreground: var(--foreground-dark);
     --foreground-bright: var(--foreground-bright-dark);
     --accent-foreground: var(--accent-foreground-dark);
@@ -78,21 +80,22 @@ html, html body {
 }
 
 
-.light, .light body {
-    --foreground:var(--foreground-light);
-    --foreground-bright:var(--foreground-bright-light);
-    --accent-foreground:var(--accent-foreground-light);
-    --muted-foreground:var(--muted-foreground-light);
-    --extra-muted-foreground:var(--extra-muted-foreground-light);
-    --background:var(--background-light);
-    --card-background:var(--card-background-light);
-    --accent-background:var(--accent-background-light);
-    --shallow-background:var(--shallow-background-light);
-    --shallower-background:var(--shallower-background-light);
-    --danger-background:var(--danger-background-light);
-    --danger-foreground:var(--danger-foreground-light);
-    --success-background:var(--success-background-light);
-    --success-foreground:var(--success-foreground-light);
+.light,
+.light body {
+    --foreground: var(--foreground-light);
+    --foreground-bright: var(--foreground-bright-light);
+    --accent-foreground: var(--accent-foreground-light);
+    --muted-foreground: var(--muted-foreground-light);
+    --extra-muted-foreground: var(--extra-muted-foreground-light);
+    --background: var(--background-light);
+    --card-background: var(--card-background-light);
+    --accent-background: var(--accent-background-light);
+    --shallow-background: var(--shallow-background-light);
+    --shallower-background: var(--shallower-background-light);
+    --danger-background: var(--danger-background-light);
+    --danger-foreground: var(--danger-foreground-light);
+    --success-background: var(--success-background-light);
+    --success-foreground: var(--success-foreground-light);
 
     color-scheme: light;
 }
@@ -126,21 +129,21 @@ body.no-scrollbar {
     overflow: hidden;
 }
 
-@layer components{
+@layer components {
     .neumorphic_shadow:not(.no_neumorphic_shadow) {
         box-shadow: inset 0px -1px 2px hsla(var(--tint-hue), var(--bg-saturation), 5%, var(--shadow-color-alpha, 0.15)),
-                    0 0 0 0.175rem transparent;
+            0 0 0 0.175rem transparent;
     }
 
     .dark .neumorphic_shadow:not(.no_neumorphic_shadow) {
         box-shadow: inset 0px -1px 2px hsla(var(--tint-hue), var(--bg-saturation), 5%, var(--shadow-color-alpha, 0.5)),
-                    0 0 0 0.175rem transparent;
+            0 0 0 0.175rem transparent;
     }
 
     .focus_ring:not(.no_focus_ring) {
         --surround-width: 0.17rem;
         box-shadow: inset 0px -1px 2px transparent,
-        0 0 0 var(--surround-width) hsla(var(--accent-background));
+            0 0 0 var(--surround-width) hsla(var(--accent-background));
         transition-property: background-color, box-shadow, color;
         transition-duration: 150ms;
         transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -149,12 +152,12 @@ body.no-scrollbar {
     .keyboard_focus_ring:not(.no_keyboard_focus_ring) {
         --surround-width: 0.17rem;
         box-shadow: inset 0px -1px 2px transparent,
-        0 0 0 var(--surround-width) #3b82f6;
+            0 0 0 var(--surround-width) #3b82f6;
     }
 
     .dark .keyboard_focus_ring:not(.no_keyboard_focus_ring) {
         box-shadow: inset 0px -1px 2px transparent,
-        0 0 0 var(--surround-width) #60a5fa;
+            0 0 0 var(--surround-width) #60a5fa;
     }
 
     .input_box_styles:not(.no_input_box_styles) {
@@ -171,7 +174,8 @@ body.no-scrollbar {
         min-height: clamp(45rem, 100vh, 67rem);
     }
 
-    a, button {
+    a,
+    button {
         transition: font-size 150ms ease;
         @apply focus:outline-none focus-visible:outline-none focus-visible:keyboard_focus_ring rounded;
     }

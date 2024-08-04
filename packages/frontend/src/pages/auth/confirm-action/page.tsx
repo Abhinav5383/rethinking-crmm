@@ -5,8 +5,9 @@ import { getConfirmActionTypeFromStringName } from "@shared/lib/utils/convertors
 import { ConfirmationActionTypes } from "@shared/types";
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import ConfirmNewPasswordCard from "./confirm-new-password";
 import ChangePasswordCard from "./change-password";
+import ConfirmNewPasswordCard from "./confirm-new-password";
+import DeleteAccountConfirmationCard from "./delete-account";
 
 const ConfirmActionPage = () => {
     const [searchParams] = useSearchParams();
@@ -53,6 +54,8 @@ const ActionCard = ({ actionType, code }: { actionType: ConfirmationActionTypes;
             return <ConfirmNewPasswordCard code={code} />;
         case ConfirmationActionTypes.CHANGE_ACCOUNT_PASSWORD:
             return <ChangePasswordCard code={code} />;
+        case ConfirmationActionTypes.DELETE_USER_ACCOUNT:
+            return <DeleteAccountConfirmationCard code={code} />;
         default:
             return (
                 <div className="w-full max-w-md flex flex-col items-center justify-center gap-6">

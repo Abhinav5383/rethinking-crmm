@@ -16,7 +16,7 @@ export const getUserRoleFromString = (roleName: string) => {
 };
 
 export const getAuthProviderFromString = (providerName: string) => {
-    switch (providerName) {
+    switch (providerName.toLowerCase()) {
         case AuthProviders.GITHUB:
             return AuthProviders.GITHUB;
         case AuthProviders.GITLAB:

@@ -1,16 +1,16 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Link2Icon, LinkIcon, SettingsIcon, Trash2Icon } from "lucide-react";
-import { authProvidersList } from "../../auth/oauth-providers";
-import { Capitalize } from "@shared/lib/utils";
-import { AuthActionIntent, type AuthProviders, type LinkedProvidersListData } from "@shared/types";
-import { getAuthProviderFromString } from "@shared/lib/utils/convertors";
-import { useState } from "react";
-import useFetch from "@/src/hooks/fetch";
-import { toast } from "sonner";
 import { LoadingSpinner } from "@/components/ui/spinner";
+import useFetch from "@/src/hooks/fetch";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { Capitalize } from "@shared/lib/utils";
+import { getAuthProviderFromString } from "@shared/lib/utils/convertors";
+import { AuthActionIntent, type AuthProviders, type LinkedProvidersListData } from "@shared/types";
+import { Link2Icon, SettingsIcon, Trash2Icon } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { authProvidersList } from "../../auth/oauth-providers";
 
 const ManageAuthProviders = ({
     linkedAuthProviders,
@@ -76,6 +76,7 @@ const ManageAuthProviders = ({
                 <Accordion type="single" collapsible className="w-full">
                     <>
                         {authProvidersList.map((authProvider) => {
+                            console.log(linkedAuthProviders);
                             let additionalProviderDetails = null;
                             for (const linkedProvider of linkedAuthProviders) {
                                 if (getAuthProviderFromString(linkedProvider.providerName) === authProvider.name) {

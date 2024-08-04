@@ -1,15 +1,15 @@
+import { Button } from "@/components/ui/button";
+import CopyBtn from "@/components/ui/copy-btn";
+import { ButtonLink } from "@/components/ui/link";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
+import { LoadingSpinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
+import { AuthContext } from "@/src/contexts/auth";
+import type { LoggedInUserData } from "@shared/types";
+import { LayoutDashboardIcon, LogOutIcon, Settings2Icon, UserIcon } from "lucide-react";
 import { useContext, useState } from "react";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { LayoutDashboardIcon, LogOutIcon, Settings2Icon, UserIcon } from "lucide-react";
-import { AuthContext } from "@/src/contexts/auth";
-import { LoadingSpinner } from "@/components/ui/spinner";
-import { ButtonLink } from "@/components/ui/link";
-import type { LoggedInUserData } from "@shared/types";
-import { Separator } from "@/components/ui/separator";
-import CopyBtn from "@/components/ui/copy-btn";
 
 export const LoginButton = ({
     className,
@@ -134,7 +134,7 @@ const ProfileDropDown = ({ session, isPopoverOpen }: { session: LoggedInUserData
                             <span className="leading-none select-none">@</span>
                             {session.userName}
                         </p>
-                        <CopyBtn text={session.userName} />
+                        <CopyBtn text={session.userName} id={session.userName} />
                     </div>
                 </div>
             </div>

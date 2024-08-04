@@ -1,11 +1,16 @@
-import type { AuthActionIntent, AuthUserProfile } from "@/../types";
+import type { AuthUserProfile } from "@/../types";
 import prisma from "@/services/prisma";
 import { generateRandomString, setUserCookie } from "@/utils";
 import { CSRF_STATE_COOKIE_NAME } from "@shared/config";
-import { AuthProviders } from "@shared/types";
+import { type AuthActionIntent, AuthProviders } from "@shared/types";
 import type { Context } from "hono";
+import { getDiscordUserProfileData } from "./discord";
+import { getGithubUserProfileData } from "./github";
+import { getGitlabUserProfileData } from "./gitlab";
+import { getGoogleUserProfileData } from "./google";
 // @ts-ignore
 import UAParser from "ua-parser-js";
+import { getAuthProviderFromString } from "@shared/lib/utils/convertors";
 
 const authUrlTemplates = {
     [AuthProviders.GITHUB]: (clientId: string, redirectUri: string, csrfState: string) => {
@@ -39,6 +44,25 @@ export const getOAuthSignInUrl = (ctx: Context, authProvider: string, actionInte
             return authUrlTemplates[AuthProviders.GOOGLE](process.env.GOOGLE_ID || "", redirectUri, csrfState);
         default:
             return "";
+    }
+};
+
+export const getAuthProviderProfileData = async (authProvider: string, code: string) => {
+    switch (getAuthProviderFromString(authProvider)) {
+        case AuthProviders.GITHUB:
+            return await getGithubUserProfileData(code);
+
+        case AuthProviders.GITLAB:
+            return await getGitlabUserProfileData(code);
+
+        case AuthProviders.DISCORD:
+            return await getDiscordUserProfileData(code);
+
+        case AuthProviders.GOOGLE:
+            return await getGoogleUserProfileData(code);
+
+        default:
+            return null;
     }
 };
 

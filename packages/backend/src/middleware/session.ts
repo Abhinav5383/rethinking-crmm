@@ -1,12 +1,12 @@
 import { getUserIpAddress } from "@/controllers/auth/commons";
 import { getUserSession } from "@/controllers/auth/session";
-import { deleteUserCookie, generateRandomString, getCurrSessionFromCtx, setUserCookie } from "@/utils";
+import { deleteUserCookie, generateRandomString, getUserSessionFromCtx, setUserCookie } from "@/utils";
+import httpCode, { defaultServerErrorResponse } from "@/utils/http";
+import { PROTECTED_ROUTE_ACCESS_ATTEMPT_CHARGE } from "@shared/config/rate-limit-charges";
 import type { Context, Next } from "hono";
 import { getCookie } from "hono/cookie";
 import { ctxReqAuthSessionKey } from "../../types";
-import httpCode, { defaultServerErrorResponse } from "@/utils/http";
 import { addToUsedRateLimit } from "./rate-limiter";
-import { PROTECTED_ROUTE_ACCESS_ATTEMPT_CHARGE } from "@shared/config/rate-limit-charges";
 
 export const AuthenticationMiddleware = async (ctx: Context, next: Next) => {
     const user = await getUserSession(ctx);
@@ -31,7 +31,7 @@ export const AuthenticationMiddleware = async (ctx: Context, next: Next) => {
 
 export const LoginProtectedRoute = async (ctx: Context, next: Next) => {
     try {
-        const session = getCurrSessionFromCtx(ctx);
+        const session = getUserSessionFromCtx(ctx);
         if (!session?.id) {
             await addToUsedRateLimit(ctx, PROTECTED_ROUTE_ACCESS_ATTEMPT_CHARGE);
             return ctx.json({ success: false, message: "You're not logged in" }, httpCode("unauthenticated"));

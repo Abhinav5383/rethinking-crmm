@@ -1,13 +1,15 @@
+import type { ContextUserSession } from "@/../types";
 import { addToUsedRateLimit } from "@/middleware/rate-limiter";
 import prisma from "@/services/prisma";
-import { generateConfirmationEmailCode, getCurrSessionFromCtx, hashPassword, matchPassword } from "@/utils";
-import { sendChangePasswordEmail, sendConfirmNewPasswordEmail } from "@/utils/email";
+import { deleteUserCookie, generateConfirmationEmailCode, getUserSessionFromCtx, hashPassword, isConfirmationCodeValid, matchPassword } from "@/utils";
+import { sendChangePasswordEmail, sendConfirmNewPasswordEmail, sendDeleteUserAccountEmail } from "@/utils/email";
 import httpCode, { defaultInvalidReqResponse } from "@/utils/http";
-import type { ConfirmationEmail } from "@prisma/client";
 import {
+    AUTHTOKEN_COOKIE_NAME,
     CHANGE_ACCOUNT_PASSWORD_EMAIL_VALIDITY_ms,
     CONFIRM_NEW_PASSWORD_EMAIL_VALIDITY_ms,
     DELETE_USER_ACCOUNT_EMAIL_VALIDITY_ms,
+    SITE_NAME_SHORT,
 } from "@shared/config";
 import { CHARGE_FOR_SENDING_INVALID_DATA, USER_WRONG_CREDENTIAL_ATTEMPT_CHARGE } from "@shared/config/rate-limit-charges";
 import { getConfirmActionTypeFromStringName } from "@shared/lib/utils/convertors";
@@ -30,8 +32,8 @@ export const addNewPassword = async (ctx: Context, formData: z.infer<typeof setN
     if (formData.newPassword !== formData.confirmNewPassword)
         return ctx.json({ success: false, message: "Passwords do not match" }, httpCode("bad_request"));
 
-    const userSession = getCurrSessionFromCtx(ctx);
-    if (!userSession || userSession.hasAPassword === true) return ctx.json({}, httpCode("bad_request"));
+    const userSession = getUserSessionFromCtx(ctx);
+    if (!userSession || userSession.password) return defaultInvalidReqResponse(ctx);
 
     const hashedPassword = await hashPassword(formData.newPassword);
     const code = generateConfirmationEmailCode(ConfirmationActionTypes.CONFIRM_NEW_PASSWORD, userSession.id);
@@ -64,33 +66,35 @@ export const getConfirmActionTypeFromCode = async (ctx: Context, code: string) =
     const actionType = getConfirmActionTypeFromStringName(confirmationEmail?.actionType || "");
     if (!confirmationEmail || !actionType) return ctx.json({ success: false, message: "Invalid or expired code" }, httpCode("bad_request"));
 
-    const isCodeValid = Date.now() <= new Date(confirmationEmail.dateCreated).getTime() + confirmationEmailValidityDict[actionType];
-    if (!isCodeValid) return ctx.json({ success: false, message: "Invalid or expired code" }, httpCode("bad_request"));
+    if (!isConfirmationCodeValid(confirmationEmail.dateCreated, confirmationEmailValidityDict[actionType])) return ctx.json({ success: false, message: "Invalid or expired code" }, httpCode("bad_request"));
 
     return ctx.json({ actionType: actionType, success: true }, httpCode("ok"));
 };
 
 export const cancelAddingNewPassword = async (ctx: Context, code: string) => {
-    const confirmationEmail = await prisma.confirmationEmail.delete({
-        where: { code: code },
+    const confirmationEmail = await prisma.confirmationEmail.findUnique({
+        where: { code: code, actionType: ConfirmationActionTypes.CONFIRM_NEW_PASSWORD },
     });
 
-    const actionType = getConfirmActionTypeFromStringName(confirmationEmail?.actionType || "");
-    if (!confirmationEmail || !actionType) return ctx.json({ success: false, message: "Invalid or expired code" }, httpCode("bad_request"));
+    if (!confirmationEmail?.id) return ctx.json({ success: false, message: "Invalid or expired code" }, httpCode("bad_request"));
+
+    await prisma.confirmationEmail.deleteMany({
+        where: {
+            userId: confirmationEmail.userId,
+            actionType: ConfirmationActionTypes.CONFIRM_NEW_PASSWORD
+        }
+    });
 
     return ctx.json({ success: true, message: "Cancelled successfully" }, httpCode("ok"));
 };
 
 export const confirmAddingNewPassword = async (ctx: Context, code: string) => {
-    const confirmationEmail = await prisma.confirmationEmail.delete({
-        where: { code: code },
+    const confirmationEmail = await prisma.confirmationEmail.findUnique({
+        where: { code: code, actionType: ConfirmationActionTypes.CONFIRM_NEW_PASSWORD },
     });
 
-    const actionType = getConfirmActionTypeFromStringName(confirmationEmail?.actionType || "");
-    if (!confirmationEmail || !actionType) return ctx.json({ success: false, message: "Invalid or expired code" }, httpCode("bad_request"));
-
-    const isCodeValid = Date.now() <= new Date(confirmationEmail.dateCreated).getTime() + confirmationEmailValidityDict[actionType];
-    if (!isCodeValid) return ctx.json({ success: false, message: "Invalid or expired code" }, httpCode("bad_request"));
+    if (!confirmationEmail) return ctx.json({ success: false, message: "Invalid or expired code" }, httpCode("bad_request"));
+    if (!isConfirmationCodeValid(confirmationEmail.dateCreated, CONFIRM_NEW_PASSWORD_EMAIL_VALIDITY_ms)) return ctx.json({ success: false, message: "Invalid or expired code" }, httpCode("bad_request"));
 
     await prisma.user.update({
         where: {
@@ -104,25 +108,20 @@ export const confirmAddingNewPassword = async (ctx: Context, code: string) => {
     await prisma.confirmationEmail.deleteMany({
         where: {
             userId: confirmationEmail.userId,
-            actionType: actionType,
+            actionType: ConfirmationActionTypes.CONFIRM_NEW_PASSWORD,
         },
     });
 
     return ctx.json({ success: true, message: "Successfully added the new password" }, httpCode("ok"));
 };
 
-export const removeAccountPassword = async (ctx: Context, formData: z.infer<typeof removeAccountPasswordFormSchema>) => {
-    const userSession = getCurrSessionFromCtx(ctx);
-    if (!userSession || userSession.hasAPassword === true) return ctx.json({}, httpCode("bad_request"));
+export const removeAccountPassword = async (ctx: Context, userSession: ContextUserSession, formData: z.infer<typeof removeAccountPasswordFormSchema>) => {
+    if (!userSession?.password) {
+        await addToUsedRateLimit(ctx, CHARGE_FOR_SENDING_INVALID_DATA);
+        return ctx.json({ success: false }, httpCode("bad_request"));
+    }
 
-    const userData = await prisma.user.findUnique({
-        where: {
-            id: userSession.id,
-        },
-    });
-    if (!userData?.password) return ctx.json({ success: false }, httpCode("bad_request"));
-
-    const isCorrectPassword = await matchPassword(formData.password, userData.password);
+    const isCorrectPassword = await matchPassword(formData.password, userSession.password);
     if (!isCorrectPassword) {
         await addToUsedRateLimit(ctx, USER_WRONG_CREDENTIAL_ATTEMPT_CHARGE);
         return ctx.json({ success: false, message: "Incorrect password" }, httpCode("bad_request"));
@@ -182,23 +181,24 @@ export const sendAccountPasswordChangeLink = async (ctx: Context, formData: z.in
 };
 
 export const cancelSettingNewPassword = async (ctx: Context, code: string) => {
-    let confirmationEmail: ConfirmationEmail | null = null;
-    try {
-        confirmationEmail = await prisma.confirmationEmail.delete({
-            where: {
-                code: code,
-            },
-        });
-
-        if (confirmationEmail?.userId) {
-            await prisma.confirmationEmail.deleteMany({
-                where: {
-                    userId: confirmationEmail.userId,
-                    actionType: confirmationEmail.actionType,
-                },
-            });
+    const confirmationEmail = await prisma.confirmationEmail.findUnique({
+        where: {
+            code: code,
+            actionType: ConfirmationActionTypes.CHANGE_ACCOUNT_PASSWORD
         }
-    } catch (err) {}
+    });
+
+    if (!confirmationEmail?.id) {
+        await addToUsedRateLimit(ctx, CHARGE_FOR_SENDING_INVALID_DATA);
+        return defaultInvalidReqResponse(ctx);
+    }
+
+    await prisma.confirmationEmail.deleteMany({
+        where: {
+            userId: confirmationEmail.userId,
+            actionType: ConfirmationActionTypes.CHANGE_ACCOUNT_PASSWORD
+        }
+    })
 
     return ctx.json({ success: true, message: "Cancelled" }, httpCode("ok"));
 };
@@ -206,25 +206,21 @@ export const cancelSettingNewPassword = async (ctx: Context, code: string) => {
 export const setNewPassword = async (ctx: Context, code: string, formData: z.infer<typeof setNewPasswordFormSchema>) => {
     if (formData.newPassword !== formData.confirmNewPassword) return defaultInvalidReqResponse(ctx, "Passwords do not match");
 
-    let confirmationEmail: ConfirmationEmail | null = null;
-    try {
-        confirmationEmail = await prisma.confirmationEmail.delete({
-            where: {
-                code: code,
-            },
-        });
-
-        if (confirmationEmail?.userId) {
-            await prisma.confirmationEmail.deleteMany({
-                where: {
-                    userId: confirmationEmail.userId,
-                    actionType: confirmationEmail.actionType,
-                },
-            });
+    const confirmationEmail = await prisma.confirmationEmail.findUnique({
+        where: {
+            code: code,
+            actionType: ConfirmationActionTypes.CHANGE_ACCOUNT_PASSWORD
         }
-    } catch (err) {}
+    });
 
-    if (!code || !confirmationEmail?.userId) return defaultInvalidReqResponse(ctx);
+    if (!confirmationEmail?.id) {
+        await addToUsedRateLimit(ctx, CHARGE_FOR_SENDING_INVALID_DATA);
+        return defaultInvalidReqResponse(ctx);
+    }
+
+    if (!confirmationEmail?.userId || !isConfirmationCodeValid(confirmationEmail.dateCreated, CHANGE_ACCOUNT_PASSWORD_EMAIL_VALIDITY_ms)) {
+        return defaultInvalidReqResponse(ctx)
+    };
     const hashedPassword = await hashPassword(formData.newPassword);
 
     await prisma.user.update({
@@ -236,5 +232,71 @@ export const setNewPassword = async (ctx: Context, code: string, formData: z.inf
         },
     });
 
+    await prisma.confirmationEmail.deleteMany({
+        where: {
+            userId: confirmationEmail.userId,
+            actionType: ConfirmationActionTypes.CHANGE_ACCOUNT_PASSWORD
+        }
+    })
+
     return ctx.json({ success: true, message: "Successfully changed account password" }, httpCode("ok"));
 };
+
+export const deleteUserAccount = async (ctx: Context, userSession: ContextUserSession) => {
+    const accountDeletionEmail = await prisma.confirmationEmail.create({
+        data: {
+            userId: userSession.id,
+            actionType: ConfirmationActionTypes.DELETE_USER_ACCOUNT,
+            code: generateConfirmationEmailCode(ConfirmationActionTypes.DELETE_USER_ACCOUNT, userSession.id)
+        }
+    });
+
+    sendDeleteUserAccountEmail({ fullName: userSession.fullName, code: accountDeletionEmail.code, receiverEmail: userSession.email });
+    return ctx.json({ success: true, message: "You should receive a confirmation email shortly" }, httpCode("ok"));
+}
+
+export const cancelAccountDeletion = async (ctx: Context, code: string) => {
+    const confirmationEmail = await prisma.confirmationEmail.findUnique({
+        where: { code: code, actionType: ConfirmationActionTypes.DELETE_USER_ACCOUNT }
+    });
+
+    if (!confirmationEmail?.id || !isConfirmationCodeValid(confirmationEmail.dateCreated, DELETE_USER_ACCOUNT_EMAIL_VALIDITY_ms)) {
+        return ctx.json({ success: false, message: "Expired or invalid code" }, httpCode("bad_request"));
+    }
+
+    await prisma.confirmationEmail.deleteMany({
+        where: {
+            userId: confirmationEmail.userId,
+            actionType: ConfirmationActionTypes.DELETE_USER_ACCOUNT
+        }
+    });
+
+    return ctx.json({ success: true, message: "Cancelled account deletion" }, httpCode("ok"));
+}
+
+export const confirmAccountDeletion = async (ctx: Context, code: string) => {
+    const confirmationEmail = await prisma.confirmationEmail.findUnique({
+        where: { code: code, actionType: ConfirmationActionTypes.DELETE_USER_ACCOUNT }
+    });
+
+    if (!confirmationEmail?.id || !isConfirmationCodeValid(confirmationEmail.dateCreated, DELETE_USER_ACCOUNT_EMAIL_VALIDITY_ms)) {
+        return ctx.json({ success: false, message: "Expired or invalid code" }, httpCode("bad_request"));
+    }
+
+    const user = await prisma.user.delete({
+        where: {
+            id: confirmationEmail.userId
+        }
+    });
+
+    await prisma.confirmationEmail.deleteMany({
+        where: {
+            userId: confirmationEmail.userId,
+            actionType: ConfirmationActionTypes.DELETE_USER_ACCOUNT
+        }
+    });
+
+    deleteUserCookie(ctx, AUTHTOKEN_COOKIE_NAME);
+
+    return ctx.json({ success: true, message: `Successfully deleted your ${SITE_NAME_SHORT} account` }, httpCode("ok"));
+}

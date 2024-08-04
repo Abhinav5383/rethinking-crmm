@@ -1,7 +1,7 @@
 import { sendEmail } from "@/services/email";
+import { CHANGE_ACCOUNT_PASSWORD_EMAIL_VALIDITY_ms, CONFIRM_NEW_PASSWORD_EMAIL_VALIDITY_ms, DELETE_USER_ACCOUNT_EMAIL_VALIDITY_ms } from "@shared/config";
 import { monthNames } from "@shared/lib/utils/date-time";
-import { changeAccountPasswordEmailTemplate, confirmNewPasswordEmailTemplate, newSignInAlertEmailTemplate } from "./templates";
-import { CHANGE_ACCOUNT_PASSWORD_EMAIL_VALIDITY_ms, CONFIRM_NEW_PASSWORD_EMAIL_VALIDITY_ms } from "@shared/config";
+import { changeAccountPasswordEmailTemplate, confirmNewPasswordEmailTemplate, deleteUserAccountEmailTemplate, newSignInAlertEmailTemplate } from "./templates";
 
 const frontendUrl = process.env.FRONTEND_URL;
 
@@ -104,6 +104,37 @@ export const sendChangePasswordEmail = async ({
             fullName,
             siteUrl: frontendUrl || "",
             expiryDuration: CHANGE_ACCOUNT_PASSWORD_EMAIL_VALIDITY_ms,
+            changePasswordPageUrl: `${frontendUrl}/auth/confirm-action?code=${encodeURIComponent(code)}`,
+        });
+
+        await sendEmail({
+            receiver: receiverEmail,
+            subject: emailTemplate.subject,
+            template: emailTemplate.emailHtml,
+            text: emailTemplate.text,
+        });
+
+        return { success: true, message: "Email send successfully" };
+    } catch (err) {
+        console.error(err);
+        return { success: false, message: "Error sending the email" };
+    }
+};
+
+export const sendDeleteUserAccountEmail = async ({
+    fullName,
+    code,
+    receiverEmail,
+}: {
+    fullName: string;
+    code: string;
+    receiverEmail: string;
+}) => {
+    try {
+        const emailTemplate = deleteUserAccountEmailTemplate({
+            fullName,
+            siteUrl: frontendUrl || "",
+            expiryDuration: DELETE_USER_ACCOUNT_EMAIL_VALIDITY_ms,
             changePasswordPageUrl: `${frontendUrl}/auth/confirm-action?code=${encodeURIComponent(code)}`,
         });
 

@@ -1,5 +1,5 @@
 import ContextProviders from "@/src/providers";
-import { lazy, Suspense, useEffect } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { Outlet, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 const Navbar = lazy(() => import("@/components/layout/Navbar/navbar"));
@@ -29,7 +29,7 @@ const RootLayout = () => {
                 <Suspense fallback={<div className="w-full flex items-center justify-center h-10 py-2">LOADING...</div>}>
                     <Navbar />
                 </Suspense>
-                <div className="container">
+                <div className="full_page container px-4 sm:px-8">
                     <Outlet />
                 </div>
             </div>

@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
 import { CheckIcon, CopyIcon } from "lucide-react";
+import { useState } from "react";
 
 type Props = {
+    id: string;
     text: string | number;
     label?: string;
     className?: string;
@@ -12,19 +13,20 @@ type Props = {
     successMessage?: string;
 };
 
-let timeoutRef: number;
-
-const CopyBtn = ({ text, label, className, labelClassName, iconClassName }: Props) => {
+const timeoutRef = new Map<string, number>();
+const CopyBtn = ({ id, text, label, className, labelClassName, iconClassName }: Props) => {
     const [showTickIcon, setShowTickIcon] = useState(false);
 
     const copyText = () => {
         try {
-            clearTimeout(timeoutRef);
+            const existingTimeout = timeoutRef.get(id);
+            if (existingTimeout) clearTimeout(existingTimeout);
             navigator.clipboard.writeText(text.toString());
             setShowTickIcon(true);
-            timeoutRef = window.setTimeout(() => {
+            const timeoutId = window.setTimeout(() => {
                 setShowTickIcon(false);
             }, 2_000);
+            timeoutRef.set(id, timeoutId);
         } catch (error) {
             console.error(error);
         }

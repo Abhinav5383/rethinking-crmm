@@ -1,9 +1,9 @@
+import { PASSWORD_HASH_SALT_ROUNDS } from "@shared/config";
+import type { ConfirmationActionTypes } from "@shared/types";
 import type { Context } from "hono";
 import { deleteCookie, setCookie } from "hono/cookie";
 import type { CookieOptions } from "hono/utils/cookie";
-import { ctxReqAuthSessionKey } from "../../types";
-import type { ConfirmationActionTypes, LoggedInUserData } from "@shared/types";
-import { PASSWORD_HASH_SALT_ROUNDS } from "@shared/config";
+import { type ContextUserSession, ctxReqAuthSessionKey } from "../../types";
 
 const shuffleCharacters = (str: string) => {
     const characters = str.split("");
@@ -37,8 +37,8 @@ export const deleteUserCookie = (ctx: Context, name: string, options?: CookieOpt
     return deleteCookie(ctx, name, options);
 };
 
-export const getCurrSessionFromCtx = (ctx: Context) => {
-    return ctx.get(ctxReqAuthSessionKey) as LoggedInUserData | undefined;
+export const getUserSessionFromCtx = (ctx: Context) => {
+    return ctx.get(ctxReqAuthSessionKey) as ContextUserSession | undefined;
 };
 
 // Hash the user password
@@ -67,3 +67,7 @@ export const generateConfirmationEmailCode = (actionType: ConfirmationActionType
 export const generateRevokeSessionAccessCode = (userId: number, length = 24) => {
     return `revoke-session-${userId}-${generateRandomString(length)}`;
 };
+
+export const isConfirmationCodeValid = (dateCreated: Date, validity: number) => {
+    return Date.now() <= new Date(dateCreated).getTime() + validity;
+}

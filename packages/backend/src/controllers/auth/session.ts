@@ -1,16 +1,16 @@
-import { type ContextUserSession, ctxReqAuthSessionKey } from "@/../types";
+import type { ContextUserSession } from "@/../types";
+import { addToUsedRateLimit } from "@/middleware/rate-limiter";
 import prisma from "@/services/prisma";
 import { generateRandomString, generateRevokeSessionAccessCode } from "@/utils";
 import { sendNewSigninAlertEmail } from "@/utils/email";
-import httpCode, { defaultServerErrorResponse } from "@/utils/http";
+import httpCode, { defaultInvalidReqResponse } from "@/utils/http";
 import type { User, UserSession } from "@prisma/client";
 import { AUTHTOKEN_COOKIE_NAME, USER_SESSION_VALIDITY } from "@shared/config";
+import { CHARGE_FOR_SENDING_INVALID_DATA } from "@shared/config/rate-limit-charges";
 import { UserSessionStates } from "@shared/types";
 import type { Context } from "hono";
 import { getCookie } from "hono/cookie";
 import { getUserDeviceDetails } from "./commons";
-import { addToUsedRateLimit } from "@/middleware/rate-limiter";
-import { CHARGE_FOR_SENDING_INVALID_DATA } from "@shared/config/rate-limit-charges";
 
 interface CreateNewSessionProps {
     userId: number;
@@ -62,6 +62,7 @@ export const createNewUserSession = async ({
             const allPreviousSessions = await prisma.userSession.findMany({
                 where: {
                     userId: userId,
+                    NOT: [{ id: newSession.id }],
                 },
             });
 
@@ -106,7 +107,7 @@ export const getUserSessionCookie = (c: Context): UserSessionCookieData | null =
         }
         const cookieData = JSON.parse(cookie) as UserSessionCookieData;
         return cookieData;
-    } catch (error) {}
+    } catch (error) { }
     return null;
 };
 
@@ -162,9 +163,8 @@ export const getUserSession = async (ctx: Context): Promise<User | null> => {
     }
 };
 
-export const logOutUserSession = async (ctx: Context, sessionId: number) => {
+export const logOutUserSession = async (ctx: Context, userSession: ContextUserSession, sessionId: number) => {
     try {
-        const userSession = ctx.get(ctxReqAuthSessionKey) as ContextUserSession;
         const deletedSession = await prisma.userSession.delete({
             where: {
                 id: sessionId,
@@ -177,7 +177,7 @@ export const logOutUserSession = async (ctx: Context, sessionId: number) => {
         }
         return ctx.json({ success: true, message: `Session with id: ${sessionId} logged out successfully` });
     } catch (error) {
-        return defaultServerErrorResponse(ctx);
+        return defaultInvalidReqResponse(ctx);
     }
 };
 
@@ -189,7 +189,7 @@ export const revokeSessionFromAccessCode = async (ctx: Context, code: string) =>
                 revokeAccessCode: code,
             },
         });
-    } catch (err) {}
+    } catch (err) { }
 
     if (!session?.id) {
         await addToUsedRateLimit(ctx, CHARGE_FOR_SENDING_INVALID_DATA);

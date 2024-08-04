@@ -1,36 +1,13 @@
-import type { AuthUserProfile } from "@/../types";
 import prisma from "@/services/prisma";
 import { generateRandomString, setUserCookie } from "@/utils";
 import httpCode from "@/utils/http";
 import { AUTHTOKEN_COOKIE_NAME } from "@shared/config";
-import { AuthProviders } from "@shared/types";
 import type { Context } from "hono";
-import { createNewAuthAccount } from "../commons";
-import { getDiscordUserProfileData } from "../discord";
-import { getGithubUserProfileData } from "../github";
-import { getGitlabUserProfileData } from "../gitlab";
-import { getGoogleUserProfileData } from "../google";
+import { createNewAuthAccount, getAuthProviderProfileData } from "../commons";
 import { createNewUserSession } from "../session";
 
 export const oAuthSignUpHandler = async (ctx: Context, authProvider: string, tokenExchangeCode: string) => {
-    let profileData: AuthUserProfile | null;
-
-    switch (authProvider) {
-        case AuthProviders.GITHUB:
-            profileData = await getGithubUserProfileData(tokenExchangeCode);
-            break;
-        case AuthProviders.GITLAB:
-            profileData = await getGitlabUserProfileData(tokenExchangeCode);
-            break;
-        case AuthProviders.DISCORD:
-            profileData = await getDiscordUserProfileData(tokenExchangeCode);
-            break;
-        case AuthProviders.GOOGLE:
-            profileData = await getGoogleUserProfileData(tokenExchangeCode);
-            break;
-        default:
-            profileData = null;
-    }
+    const profileData = await getAuthProviderProfileData(authProvider, tokenExchangeCode);
 
     if (
         !profileData ||
@@ -58,7 +35,7 @@ export const oAuthSignUpHandler = async (ctx: Context, authProvider: string, tok
     });
     if (possiblyAlreadyExistingAuthAccount?.id) {
         return ctx.json(
-            { success: false, message: "A user already exists with the account you are trying to sign up with." },
+            { success: false, message: "A user already exists with this account, try to login instead" },
             httpCode("bad_request"),
         );
     }
@@ -71,7 +48,7 @@ export const oAuthSignUpHandler = async (ctx: Context, authProvider: string, tok
     });
     if (possiblyAlreadyExistingUser?.id) {
         return ctx.json(
-            { success: false, message: "A user already exists with the account you are trying to sign up with." },
+            { success: false, message: "A user already exists with the email you are trying to sign up with." },
             httpCode("bad_request"),
         );
     }

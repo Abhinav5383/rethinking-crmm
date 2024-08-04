@@ -8,16 +8,17 @@ import { SITE_NAME_SHORT } from "@shared/config";
 import type { LinkedProvidersListData } from "@shared/types";
 import { useQuery } from "@tanstack/react-query";
 import { Helmet } from "react-helmet";
+import DeleteAccountDialog from "./delete-account";
 import EditProfileDialog from "./edit-profile";
 import ManageAuthProviders from "./manage-providers";
 import ManagePasswords from "./password/page";
-import { useEffect } from "react";
 
 const getLinkedAuthProviders = async (userId?: number) => {
     if (!userId) return null;
     try {
         const res = await useFetch("/api/user/get-linked-auth-providers");
-        return ((await res.json()) || []) as LinkedProvidersListData[];
+        const providers: LinkedProvidersListData[] = (await res.json())?.providers || [];
+        return providers;
     } catch (err) {
         console.error(err);
         return null;
@@ -45,7 +46,7 @@ const AccountSettingsPage = () => {
                 <FullWidthSpinner />
             ) : (
                 <>
-                    <Card className="w-full p-0">
+                    <Card className="w-full">
                         <CardHeader className="w-full flex flex-row items-center justify-between py-2">
                             <CardTitle className="flex w-fit">User profile</CardTitle>
                             <EditProfileDialog
@@ -87,7 +88,7 @@ const AccountSettingsPage = () => {
                         </CardContent>
                     </Card>
 
-                    <Card className="w-full p-0">
+                    <Card className="w-full">
                         <CardHeader>
                             <CardTitle>Account security</CardTitle>
                         </CardHeader>
@@ -120,6 +121,22 @@ const AccountSettingsPage = () => {
                                     linkedAuthProviders={linkedAuthProviders.data || []}
                                     refetchLinkedAuthProviders={refetchLinkedAuthProviders}
                                 />
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="w-full">
+                        <CardHeader>
+                            <CardTitle>Delete account</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="w-full flex items-center justify-between gap-12">
+                                <p className="text-muted-foreground">
+                                    Once you delete your account, there is no going back. Deleting your account will remove all of your data
+                                    from our servers.
+                                </p>
+
+                                <DeleteAccountDialog />
                             </div>
                         </CardContent>
                     </Card>
